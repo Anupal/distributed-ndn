@@ -1,6 +1,25 @@
 # distributed-ndn
 
-### Network Layer
+### Graph simulation
+* 1000x1000 grid space where each node will have a random physical coordinate
+* 20 nodes
+* Every node will form links with 5 nearest neighbors
+* Balancing NUM_NODES and CONNECTIVITY (k) will give a graph which will be connected even when some nodes die.
+
+
+### How to run graph simulation
+1. Install packages
+```
+pip install -r requirements.txt
+```
+2. Execute main.py
+```
+cd simulations && python3 main.py
+
+```
+
+
+### Network Layer (Theoretical)
 1. Simulate wireless network using dynamic node positions
     * a central coordinate for every group
     * nodes running in group get coordinates within the defined radius of the group
