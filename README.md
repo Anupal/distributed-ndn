@@ -1,5 +1,9 @@
 # distributed-ndn
 
+### Node hello processes
+* Nodes running as processes
+* Each node has a UDP server thread which listens for incoming packets and a main thread which sends hello to all peers
+
 ### Graph simulation
 * 1000x1000 grid space where each node will have a random physical coordinate
 * 20 nodes
