@@ -132,8 +132,12 @@ class Node(multiprocessing.Process):
         Main Application loop.
         """
 
+        # Send hello:
         self.ndn.comm.listen()
+        self.ndn.send_hellos()
+        time.sleep(self.hello_delay + 2)
 
+        # Main loop:
         while True:
             self.ndn.send_hellos()
             self.ndn.callback_hello()
