@@ -4,6 +4,8 @@ import multiprocessing
 import socket
 import threading
 import time
+import constants
+import re
 
 
 class Network:
@@ -51,27 +53,32 @@ class Network:
         }
         print(f"NEAREST {k} NODES: {self.k_nearest}")
 
-    def __init__(self, label, all_nodes, k, comm, hello_delay) -> None:
+    def __init__(self, label, all_nodes, k, comm, hello_delay, hello_message) -> None:
         self.comm: SocketCommunication = comm
         self.label = label
         self._simulate_physical_layer(all_nodes, k)
+        self.hello_delay = hello_delay
+        self.hello_message = str(hello_message)
 
         self.neighbor_table = {}
         self.pit = {}
 
-    def send_hello(self):
-        ...
+        self.comm.set_hello_function(self.send_hello)
 
-    def send_hellos(self):
+    def send_hello(self, ip, port):
+        self.comm.send(ip, port, self.hello_message)
+
+    def send_hellos(self, ip, port):
         """
         Loop over k_nearest nodes and send hellos -> label : TCP IP, TCP port
         """
 
         for node in self.k_nearest:
             ip, port = self.k_nearest[node]
-            self.comm.send(ip, port, "hello")
+            self.send_hello(ip, port)
+            time.sleep(self.hello_delay)
 
-    def callback_hello(data):
+    def callback_hello(self):
         """
         Handle FIB update here.
         """
@@ -79,6 +86,21 @@ class Network:
 
 def euclidean_distance(p1, p2):
     return sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2)
+
+
+class HelloMessage:
+    """
+    Class for HELLO, its source label and the issued certificate
+    """
+
+    def __init__(self, neighbor_label, ip, port, cert):
+        self.certificate = cert
+        self.neighbour_label = neighbor_label
+        self.ip = ip
+        self.port = port
+
+    def __str__(self):
+        return f"[{constants.HELLO_ID}][{self.neighbour_label}][{self.ip}][{self.port}][{self.certificate}]"
 
 
 class Node(multiprocessing.Process):
@@ -97,7 +119,11 @@ class Node(multiprocessing.Process):
         self.hello_delay = hello_delay
 
         comm = SocketCommunication(address, port)
-        self.ndn = Network(label, all_nodes, k, comm, hello_delay)
+        # TODO use actual cert here
+        cert = "ULTRA_CERT"
+        hello_message = HelloMessage(neighbor_label=label, ip=address, port=port, cert=cert)
+
+        self.ndn = Network(label, all_nodes, k, comm, hello_delay, hello_message)
 
     def run(self):
         """
@@ -111,6 +137,38 @@ class Node(multiprocessing.Process):
             time.sleep(self.hello_delay)
 
 
+class FIB:
+    """
+    Data structure for FIB table. Table is represented as dictionary with the labels being the
+    key and the rest being the value in form of instances of the FIB_ROW class
+    """
+
+    class FIB_Row:
+        def __init__(self, tcp_ip, tcp_port, certificate):
+            self.tcp_ip = tcp_ip
+            self.tcp_port = tcp_port
+            self.certificate = certificate
+            self.hello_count = 1
+
+        def increment_hello_count(self):
+            self.hello_count += 1
+
+        def decrement_hello_count(self):
+            self.hello_count -= 1
+            return self.hello_count > 0
+
+    def __init__(self):
+        self.table = {}
+
+    def received_hello(self, hello_message: HelloMessage):
+        if hello_message.neighbour_label in self.table:
+            if not self.table[hello_message.neighbour_label] == constants.MAX_HELLO_COUNT:
+                self.table[hello_message.neighbour_label].increment_hello_count()
+        else:
+            self.table[hello_message.neighbour_label] = self.FIB_Row(hello_message.ip, hello_message.port,
+                                                                     hello_message.certificate)
+
+
 class SocketCommunication:
     """
     Manages threads for TCP server and clients.
@@ -120,6 +178,11 @@ class SocketCommunication:
         self.address = address
         self.port = port
         self.callbacks = []
+        self.fib = FIB()
+        self.send_hello = None
+
+    def set_hello_function(self, send_hello):
+        self.send_hello = send_hello
 
     def register_callback(self, callback):
         self.callbacks.append(callback)
@@ -142,10 +205,34 @@ class SocketCommunication:
         """
         data = peer_connection.recv(1024).decode("utf-8")
         print(f"Received message '{data}' from {peer_address}")
+        data_type, decoded_data = self._decode_data(data)
 
-        # Execute all registered callbacks
-        for callback in self.callbacks:
-            callback(data)
+        if data_type == 0:
+            self.fib.received_hello(decoded_data)
+            self.send_hello(decoded_data.ip, decoded_data.port)
+        elif data_type == 1:
+            print("received data")  # TODO
+        elif data_type == 2:
+            print("received interest")  # TODO
+
+    def _decode_data(self, data):
+        data_array = re.findall(r'[([^]]+]', data)
+        if data_array[0] == 0:
+            label = data_array[1]
+            ip_address = data_array[2]
+            port = int(data_array[3])
+            cert = data_array[4]
+            # TODO: Validate cert here
+            if re.match(ip_address, r'^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$'):
+                return 0, HelloMessage(neighbor_label=label, ip=ip_address, port=port, cert=cert)
+            else:
+                raise Exception("Invalid IP address")
+        elif data_array[1] == 1:
+            return 1, "TODO"
+        elif data_array[2] == 2:
+            return 2, "TODO"
+        else:
+            return -1, "DATA GETS IGNORED, SINCE TYPE -1 DOESN'T EXIST"
 
     def _listen_thread(self):
         """

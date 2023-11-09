@@ -18,7 +18,7 @@ def main():
 
     print(f"STARTING NODE {label}")
 
-    node = Node(
+    Node(
         label,
         "127.0.0.1",
         sport,
