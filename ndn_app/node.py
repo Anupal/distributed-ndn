@@ -3,6 +3,7 @@ from math import sqrt
 import multiprocessing
 import socket
 import threading
+import time
 
 
 class Network:
@@ -50,7 +51,7 @@ class Network:
         }
         print(f"NEAREST {k} NODES: {self.k_nearest}")
 
-    def __init__(self, label, all_nodes, k, comm) -> None:
+    def __init__(self, label, all_nodes, k, comm, hello_delay) -> None:
         self.comm: SocketCommunication = comm
         self.label = label
         self._simulate_physical_layer(all_nodes, k)
@@ -58,7 +59,8 @@ class Network:
         self.neighbor_table = {}
         self.pit = {}
 
-        while True
+    def send_hello(self):
+        ...
 
     def send_hellos(self):
         """
@@ -68,6 +70,11 @@ class Network:
         for node in self.k_nearest:
             ip, port = self.k_nearest[node]
             self.comm.send(ip, port, "hello")
+
+    def callback_hello(data):
+        """
+        Handle FIB update here.
+        """
 
 
 def euclidean_distance(p1, p2):
@@ -85,7 +92,9 @@ class Node(multiprocessing.Process):
     """
 
     def __init__(self, label, address, port, all_nodes, k, hello_delay):
+        super().__init__()
         self.label = label
+        self.hello_delay = hello_delay
 
         comm = SocketCommunication(address, port)
         self.ndn = Network(label, all_nodes, k, comm, hello_delay)
@@ -99,6 +108,7 @@ class Node(multiprocessing.Process):
 
         while True:
             self.ndn.send_hellos()
+            time.sleep(self.hello_delay)
 
 
 class SocketCommunication:

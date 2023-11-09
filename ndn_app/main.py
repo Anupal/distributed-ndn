@@ -25,9 +25,7 @@ def main():
         constants.NODES,
         constants.MINIMUM_NEIGHBORS,
         constants.HELLO_DELAY,
-    )
-
-    node.ndn.send_hellos()
+    ).start()
 
 
 if __name__ == "__main__":
