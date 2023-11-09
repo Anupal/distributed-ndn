@@ -69,7 +69,10 @@ class Network:
     def send_hello(self, ip, port):
         self.comm.send(ip, port, self.hello_message)
 
-    def send_hellos(self):
+    def send_hello(self, ip, port):
+        self.comm.send(ip, port, self.hello_message)
+
+    def send_hellos(self, ip, port):
         """
         Loop over k_nearest nodes and send hellos -> label : TCP IP, TCP port
         """
