@@ -1,17 +1,11 @@
+from math import sqrt
+
+import multiprocessing
 import socket
 import threading
-import multiprocessing
 
 
-class DataPlane:
-    """
-    Responsibilities:
-        * Handles Interest and Data packets
-        * Updates PIT and Content Store
-    """
-
-
-class ControlPlane:
+class Network:
     """
     Responsibilities:
         * Updates neighbor tables (FIB)
@@ -20,7 +14,64 @@ class ControlPlane:
         * Sends hello packets periodically
             - FORMAT: [HELLO|SOURCE_LABEL|CERTIFICATE]
         * Handles received hello packets and authenticates using crypto module
+        * Handles Interest and Data packets
+        * Updates PIT and Content Store
     """
+
+    def _simulate_physical_layer(self, all_nodes, k):
+        """
+        Calculates euclidean distances to all other nodes and saves only k nearest neighbors.
+        This simulates a physical wireless medium where signal from nearby nodes is visible.
+        """
+
+        self.x, self.y = all_nodes[self.label]["xy"]
+
+        # calculate all distances
+        all_distances = []
+        for label in all_nodes:
+            if label != self.label:
+                all_distances.append(
+                    (
+                        label,
+                        euclidean_distance((self.x, self.y), all_nodes[label]["xy"]),
+                    )
+                )
+
+        # filter k nearest based on distance
+        k_nearest = sorted(all_distances, key=lambda x: x[1])[:k]
+
+        # save labels and server ip:port information
+        self.k_nearest = {
+            node[0]: (
+                all_nodes[node[0]]["server_ip"],
+                all_nodes[node[0]]["server_port"],
+            )
+            for node in k_nearest
+        }
+        print(f"NEAREST {k} NODES: {self.k_nearest}")
+
+    def __init__(self, label, all_nodes, k, comm) -> None:
+        self.comm: SocketCommunication = comm
+        self.label = label
+        self._simulate_physical_layer(all_nodes, k)
+
+        self.neighbor_table = {}
+        self.pit = {}
+
+        while True
+
+    def send_hellos(self):
+        """
+        Loop over k_nearest nodes and send hellos -> label : TCP IP, TCP port
+        """
+
+        for node in self.k_nearest:
+            ip, port = self.k_nearest[node]
+            self.comm.send(ip, port, "hello")
+
+
+def euclidean_distance(p1, p2):
+    return sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2)
 
 
 class Node(multiprocessing.Process):
@@ -33,8 +84,21 @@ class Node(multiprocessing.Process):
         * Sensor/Actuator
     """
 
+    def __init__(self, label, address, port, all_nodes, k, hello_delay):
+        self.label = label
+
+        comm = SocketCommunication(address, port)
+        self.ndn = Network(label, all_nodes, k, comm, hello_delay)
+
     def run(self):
-        ...
+        """
+        Main Application loop.
+        """
+
+        self.ndn.comm.listen()
+
+        while True:
+            self.ndn.send_hellos()
 
 
 class SocketCommunication:
@@ -42,8 +106,7 @@ class SocketCommunication:
     Manages threads for TCP server and clients.
     """
 
-    def __init__(self, label, address, port) -> None:
-        self.label = label
+    def __init__(self, address, port) -> None:
         self.address = address
         self.port = port
         self.callbacks = []
@@ -54,13 +117,11 @@ class SocketCommunication:
     def send(self, dest_address, dest_port, data):
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-        print(
-            f"[ {self.label} ] Sending message '{data}' to {(dest_address, dest_port)}"
-        )
+        print(f"Sending message '{data}' to {(dest_address, dest_port)}")
         try:
             client_socket.connect((dest_address, dest_port))
         except Exception:
-            print(f"[ {self.label} ] Can't connect to {(dest_address, dest_port)}")
+            print(f"Can't connect to {(dest_address, dest_port)}")
         else:
             client_socket.send(data.encode("utf-8"))
 
@@ -70,7 +131,7 @@ class SocketCommunication:
 
         """
         data = peer_connection.recv(1024).decode("utf-8")
-        print(f"[ {self.label} ] Received message '{data}' from {peer_address}")
+        print(f"Received message '{data}' from {peer_address}")
 
         # Execute all registered callbacks
         for callback in self.callbacks:

@@ -1,20 +1,34 @@
 import sys
-from node import SocketCommunication
+from node import Node
 import time
+import constants
 
 
-def main(label, sport, dport):
-    conn = SocketCommunication(label, "127.0.0.1", sport)
-    conn.listen()
-    time.sleep(5)
-    conn.send("127.0.0.1", dport, "Hello")
-
-
-if __name__ == "__main__":
+def main():
     args = sys.argv
 
     if len(args) < 2:
-        print("Please pass Node ID and port as cmdline arg")
+        print("Format: python3 tests/comm.py <label> <sport> <dport>")
+        exit(1)
 
-    print(f"STARTING NODE {args[1]}")
-    main(args[1], int(args[2]), int(args[3]))
+    label = int(args[1])
+    sport = constants.STARTING_SERVER_PORT + label
+
+    print("ALL NODES: ", constants.NODES)
+
+    print(f"STARTING NODE {label}")
+
+    node = Node(
+        label,
+        "127.0.0.1",
+        sport,
+        constants.NODES,
+        constants.MINIMUM_NEIGHBORS,
+        constants.HELLO_DELAY,
+    )
+
+    node.ndn.send_hellos()
+
+
+if __name__ == "__main__":
+    main()
