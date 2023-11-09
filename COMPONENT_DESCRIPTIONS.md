@@ -38,13 +38,13 @@ All can be be represented as dictionaries with first column as the key.
 
 ## Packet Structure
 
-[PACKET_ID]~[PAYLOAD]
+[PACKET_ID][PAYLOAD]
 
 | Packet | Structure |
 | --- | --- |
-| Hello | "0|NEIGHBOR_LABEL|IP|PORT|CERT"  |
-| Data | "1|DATA ADDRESS|DATA|SIGN"  |
-| Interest | "2|DATA ADDRESS|NEIGHBOR_LABEL|Index|SIGN" |
+| Hello | "[0][NEIGHBOR_LABEL][IP][PORT][CERT]"  |
+| Data | "[1][DATA ADDRESS][DATA][SIGN]"|
+| Interest | "[2][DATA ADDRESS][NEIGHBOR_LABEL][Index][SIGN]" |
 
 ## Components
 ### 1. SocketCommunication
