@@ -8,7 +8,7 @@ def main():
     args = sys.argv
 
     if len(args) < 2:
-        print("Format: python3 tests/comm.py <label> <sport> <dport>")
+        print("Format: python3 ndn_app/main.py <label>")
         exit(1)
 
     label = int(args[1])
