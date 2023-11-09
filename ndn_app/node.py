@@ -235,20 +235,17 @@ class SocketCommunication:
             callback(data)
 
     def _decode_data(self, data):
-        data_array = re.findall(r'[([^]]+]', data)
-        if data_array[0] == 0:
+        data_array = re.findall(r'\[([^\]]+)\]', data)
+        if data_array[0] == '0':
             label = data_array[1]
             ip_address = data_array[2]
             port = int(data_array[3])
             cert = data_array[4]
             # TODO: Validate cert here
-            if re.match(ip_address, r'^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$'):
-                return 0, HelloMessage(neighbor_label=label, ip=ip_address, port=port, cert=cert)
-            else:
-                raise Exception("Invalid IP address")
-        elif data_array[1] == 1:
+            return 0, HelloMessage(neighbor_label=label, ip=ip_address, port=port, cert=cert)
+        elif data_array[1] == '1':
             return 1, "TODO"
-        elif data_array[2] == 2:
+        elif data_array[2] == '2':
             return 2, "TODO"
         else:
             return -1, "DATA GETS IGNORED, SINCE TYPE -1 DOESN'T EXIST"
