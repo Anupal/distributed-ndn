@@ -1,3 +1,4 @@
+from copy import copy
 from math import sqrt
 
 import multiprocessing
@@ -68,7 +69,7 @@ class Network:
     def send_hello(self, ip, port):
         self.comm.send(ip, port, self.hello_message)
 
-    def send_hellos(self, ip, port):
+    def send_hellos(self):
         """
         Loop over k_nearest nodes and send hellos -> label : TCP IP, TCP port
         """
@@ -82,6 +83,7 @@ class Network:
         """
         Handle FIB update here.
         """
+        self.comm.update_fib()
 
 
 def euclidean_distance(p1, p2):
@@ -134,6 +136,7 @@ class Node(multiprocessing.Process):
 
         while True:
             self.ndn.send_hellos()
+            self.ndn.callback_hello()
             time.sleep(self.hello_delay)
 
 
@@ -168,6 +171,12 @@ class FIB:
             self.table[hello_message.neighbour_label] = self.FIB_Row(hello_message.ip, hello_message.port,
                                                                      hello_message.certificate)
 
+    def update_counts(self):
+        for each_key in copy(self.table).keys():
+            count_bigger_zero = self.table[each_key].decrement_hello_count()
+            if not count_bigger_zero:
+                del self.table[each_key]
+
 
 class SocketCommunication:
     """
@@ -180,6 +189,9 @@ class SocketCommunication:
         self.callbacks = []
         self.fib = FIB()
         self.send_hello = None
+
+    def update_fib(self):
+        self.fib.update_counts()
 
     def set_hello_function(self, send_hello):
         self.send_hello = send_hello
@@ -214,6 +226,9 @@ class SocketCommunication:
             print("received data")  # TODO
         elif data_type == 2:
             print("received interest")  # TODO
+        # Execute all registered callbacks
+        for callback in self.callbacks:
+            callback(data)
 
     def _decode_data(self, data):
         data_array = re.findall(r'[([^]]+]', data)
