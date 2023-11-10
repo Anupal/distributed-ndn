@@ -9,6 +9,58 @@ import constants
 import re
 
 
+class HelloMessage:
+    """
+    Class for HELLO, its source label and the issued certificate
+    """
+
+    def __init__(self, neighbor_label, ip, port, cert):
+        self.certificate = cert
+        self.neighbour_label = neighbor_label
+        self.ip = ip
+        self.port = port
+
+    def __str__(self):
+        return f"[{constants.HELLO_ID}][{self.neighbour_label}][{self.ip}][{self.port}][{self.certificate}]"
+
+
+class FIB:
+    """
+    Data structure for FIB table. Table is represented as dictionary with the labels being the
+    key and the rest being the value in form of instances of the FIB_ROW class
+    """
+
+    class FIB_Row:
+        def __init__(self, tcp_ip, tcp_port, certificate):
+            self.tcp_ip = tcp_ip
+            self.tcp_port = tcp_port
+            self.certificate = certificate
+            self.hello_count = 1
+
+        def increment_hello_count(self):
+            self.hello_count += 1
+
+        def decrement_hello_count(self):
+            self.hello_count -= 1
+            return self.hello_count > 0
+
+    def __init__(self):
+        self.table = {}
+
+    def received_hello(self, hello_message: HelloMessage):
+        if hello_message.neighbour_label in self.table:
+            if not self.table[hello_message.neighbour_label] == constants.MAX_HELLO_COUNT:
+                self.table[hello_message.neighbour_label].increment_hello_count()
+        else:
+            self.table[hello_message.neighbour_label] = self.FIB_Row(hello_message.ip, hello_message.port,
+                                                                     hello_message.certificate)
+
+    def update_counts(self):
+        for each_key in copy(self.table).keys():
+            count_bigger_zero = self.table[each_key].decrement_hello_count()
+            if not count_bigger_zero:
+                del self.table[each_key]
+
 
 class Network:
     """
@@ -64,13 +116,12 @@ class Network:
         self.hello_delay = hello_delay
         self.hello_message = str(hello_message)
 
-        self.neighbor_table = {}
+        self.neighbor_table = FIB()
         self.pit = {}
 
-        self.comm.set_hello_function(self.send_hello)
-
-    def send_hello(self, ip, port):
-        self.comm.send(ip, port, self.hello_message)
+        self.comm.register_callback(self.hello_handler)
+        # self.comm.register_callback(self.data_handler)
+        # self.comm.register_callback(self.interest_handler)
 
     def send_hello(self, ip, port):
         self.comm.send(ip, port, self.hello_message)
@@ -84,31 +135,56 @@ class Network:
             ip, port = self.k_nearest[node]
             self.send_hello(ip, port)
             time.sleep(self.hello_delay)
+            self.neighbor_table.update_counts()
 
-    def callback_hello(self):
+    def _decode_data(self, data):
+        data_array = re.findall(r'\[([^\]]+)\]', data)
+        if data_array[0] == '0':
+            label = data_array[1]
+            ip_address = data_array[2]
+            port = int(data_array[3])
+            cert = data_array[4]
+            # TODO: Validate cert here
+            return 0, HelloMessage(neighbor_label=label, ip=ip_address, port=port, cert=cert)
+        elif data_array[1] == '1':
+            return 1, "TODO"
+        elif data_array[2] == '2':
+            return 2, "TODO"
+        else:
+            return -1, "DATA GETS IGNORED, SINCE TYPE -1 DOESN'T EXIST"
+
+    def hello_handler(self, data):
         """
-        Handle FIB update here.
+        Callback for hello packets. This will be called by SocketCommunication object.
+        This will handle FIB update here.
         """
-        self.comm.update_fib()
+
+        print("Hello handler: data=", data)
+        data_type, decoded_data = self._decode_data(data)
+
+        if data_type == 0:
+            self.neighbor_table.received_hello(decoded_data)
+            self.send_hello(decoded_data.ip, decoded_data.port)
+
+    def interest_handler(self, data):
+        """
+        Callback for interest packets. This will be called by SocketCommunication object.
+        This will handle PIT updates and interest propagation.
+        """
+
+        print("Interest handler: data=", data)
+
+    def data_handler(self, data):
+        """
+        Callback for data packets. This will be called by SocketCommunication object.
+        This will handle PIT updates and data propagation.
+        """
+
+        print("Data handler: data=", data)
 
 
 def euclidean_distance(p1, p2):
     return sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2)
-
-
-class HelloMessage:
-    """
-    Class for HELLO, its source label and the issued certificate
-    """
-
-    def __init__(self, neighbor_label, ip, port, cert):
-        self.certificate = cert
-        self.neighbour_label = neighbor_label
-        self.ip = ip
-        self.port = port
-
-    def __str__(self):
-        return f"[{constants.HELLO_ID}][{self.neighbour_label}][{self.ip}][{self.port}][{self.certificate}]"
 
 
 class Node(multiprocessing.Process):
@@ -146,46 +222,7 @@ class Node(multiprocessing.Process):
         # Main loop:
         while True:
             self.ndn.send_hellos()
-            self.ndn.callback_hello()
             time.sleep(self.hello_delay)
-
-
-class FIB:
-    """
-    Data structure for FIB table. Table is represented as dictionary with the labels being the
-    key and the rest being the value in form of instances of the FIB_ROW class
-    """
-
-    class FIB_Row:
-        def __init__(self, tcp_ip, tcp_port, certificate):
-            self.tcp_ip = tcp_ip
-            self.tcp_port = tcp_port
-            self.certificate = certificate
-            self.hello_count = 1
-
-        def increment_hello_count(self):
-            self.hello_count += 1
-
-        def decrement_hello_count(self):
-            self.hello_count -= 1
-            return self.hello_count > 0
-
-    def __init__(self):
-        self.table = {}
-
-    def received_hello(self, hello_message: HelloMessage):
-        if hello_message.neighbour_label in self.table:
-            if not self.table[hello_message.neighbour_label] == constants.MAX_HELLO_COUNT:
-                self.table[hello_message.neighbour_label].increment_hello_count()
-        else:
-            self.table[hello_message.neighbour_label] = self.FIB_Row(hello_message.ip, hello_message.port,
-                                                                     hello_message.certificate)
-
-    def update_counts(self):
-        for each_key in copy(self.table).keys():
-            count_bigger_zero = self.table[each_key].decrement_hello_count()
-            if not count_bigger_zero:
-                del self.table[each_key]
 
 
 class SocketCommunication:
@@ -197,14 +234,6 @@ class SocketCommunication:
         self.address = address
         self.port = port
         self.callbacks = []
-        self.fib = FIB()
-        self.send_hello = None
-
-    def update_fib(self):
-        self.fib.update_counts()
-
-    def set_hello_function(self, send_hello):
-        self.send_hello = send_hello
 
     def register_callback(self, callback):
         self.callbacks.append(callback)
@@ -227,34 +256,10 @@ class SocketCommunication:
         """
         data = peer_connection.recv(1024).decode("utf-8")
         print(f"Received message '{data}' from {peer_address}")
-        data_type, decoded_data = self._decode_data(data)
 
-        if data_type == 0:
-            self.fib.received_hello(decoded_data)
-            self.send_hello(decoded_data.ip, decoded_data.port)
-        elif data_type == 1:
-            print("received data")  # TODO
-        elif data_type == 2:
-            print("received interest")  # TODO
         # Execute all registered callbacks
         for callback in self.callbacks:
             callback(data)
-
-    def _decode_data(self, data):
-        data_array = re.findall(r'\[([^\]]+)\]', data)
-        if data_array[0] == '0':
-            label = data_array[1]
-            ip_address = data_array[2]
-            port = int(data_array[3])
-            cert = data_array[4]
-            # TODO: Validate cert here
-            return 0, HelloMessage(neighbor_label=label, ip=ip_address, port=port, cert=cert)
-        elif data_array[1] == '1':
-            return 1, "TODO"
-        elif data_array[2] == '2':
-            return 2, "TODO"
-        else:
-            return -1, "DATA GETS IGNORED, SINCE TYPE -1 DOESN'T EXIST"
 
     def _listen_thread(self):
         """
