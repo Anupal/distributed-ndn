@@ -150,9 +150,6 @@ class Network:
             cert = data_array[4]
             # TODO: Validate cert here
             data_type = int(data_array[0])
-            ack = False
-            if data_array[0] == '4':
-                ack = True
             return data_type, HelloMessage(neighbor_label=label, ip=ip_address, port=port, cert=cert)
         elif data_array[1] == '1':
             return 1, "TODO"
