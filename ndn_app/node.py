@@ -20,8 +20,11 @@ class HelloMessage:
         self.ip = ip
         self.port = port
 
-    def __str__(self):
-        return f"[{constants.HELLO_ID}][{self.neighbour_label}][{self.ip}][{self.port}][{self.certificate}]"
+    def get_string(self, ack=False):
+        id = constants.HELLO_ID
+        if ack:
+            id = constants.HELLO_ACK_ID
+        return f"[{id}][{self.neighbour_label}][{self.ip}][{self.port}][{self.certificate}]"
 
 
 class FIB:
@@ -114,7 +117,7 @@ class Network:
         self.label = label
         self._simulate_physical_layer(all_nodes, k)
         self.hello_delay = hello_delay
-        self.hello_message = str(hello_message)
+        self.hello_message = hello_message
 
         self.neighbor_table = FIB()
         self.pit = {}
@@ -124,7 +127,10 @@ class Network:
         # self.comm.register_callback(self.interest_handler)
 
     def send_hello(self, ip, port):
-        self.comm.send(ip, port, self.hello_message)
+        self.comm.send(ip, port, self.hello_message.get_string())
+
+    def send_hello_ack(self, ip, port):
+        self.comm.send(ip, port, self.hello_message.get_string(ack=True))
 
     def send_hellos(self):
         """
@@ -139,13 +145,17 @@ class Network:
 
     def _decode_data(self, data):
         data_array = re.findall(r'\[([^\]]+)\]', data)
-        if data_array[0] == '0':
+        if data_array[0] == '0' or data_array[0] == '4':
             label = data_array[1]
             ip_address = data_array[2]
             port = int(data_array[3])
             cert = data_array[4]
             # TODO: Validate cert here
-            return 0, HelloMessage(neighbor_label=label, ip=ip_address, port=port, cert=cert)
+            data_type = int(data_array[0])
+            ack = False
+            if data_array[0] == '4':
+                ack = True
+            return data_type, HelloMessage(neighbor_label=label, ip=ip_address, port=port, cert=cert)
         elif data_array[1] == '1':
             return 1, "TODO"
         elif data_array[2] == '2':
@@ -162,9 +172,10 @@ class Network:
         print("Hello handler: data=", data)
         data_type, decoded_data = self._decode_data(data)
 
-        if data_type == 0:
+        if data_type == 0 or data_type == 4:
             self.neighbor_table.received_hello(decoded_data)
-            self.send_hello(decoded_data.ip, decoded_data.port)
+            if data_type == 0:
+                self.send_hello_ack(decoded_data.ip, decoded_data.port)
 
     def interest_handler(self, data):
         """
