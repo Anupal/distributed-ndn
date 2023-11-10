@@ -140,8 +140,6 @@ class Network:
         for node in self.k_nearest:
             ip, port = self.k_nearest[node]
             self.send_hello(ip, port)
-            time.sleep(self.hello_delay)
-            self.neighbor_table.update_counts()
 
     def _decode_data(self, data):
         data_array = re.findall(r'\[([^\]]+)\]', data)
@@ -234,6 +232,7 @@ class Node(multiprocessing.Process):
         while True:
             self.ndn.send_hellos()
             time.sleep(self.hello_delay)
+            self.ndn.neighbor_table.update_counts()
 
 
 class SocketCommunication:
