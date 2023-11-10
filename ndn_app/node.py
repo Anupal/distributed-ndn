@@ -9,6 +9,7 @@ import constants
 import re
 
 
+
 class Network:
     """
     Responsibilities:
@@ -18,6 +19,8 @@ class Network:
         * Sends hello packets periodically
             - FORMAT: [HELLO|SOURCE_LABEL|CERTIFICATE]
         * Handles received hello packets and authenticates using crypto module
+        * Handles Interest and Data packets
+        * Updates PIT and Content Store
         * Handles Interest and Data packets
         * Updates PIT and Content Store
     """
