@@ -52,11 +52,15 @@ class FIB:
 
     def received_hello(self, hello_message: HelloMessage):
         if hello_message.neighbour_label in self.table:
-            if not self.table[hello_message.neighbour_label] == constants.MAX_HELLO_COUNT:
+            if (
+                not self.table[hello_message.neighbour_label]
+                == constants.MAX_HELLO_COUNT
+            ):
                 self.table[hello_message.neighbour_label].increment_hello_count()
         else:
-            self.table[hello_message.neighbour_label] = self.FIB_Row(hello_message.ip, hello_message.port,
-                                                                     hello_message.certificate)
+            self.table[hello_message.neighbour_label] = self.FIB_Row(
+                hello_message.ip, hello_message.port, hello_message.certificate
+            )
 
     def update_counts(self):
         for each_key in copy(self.table).keys():
@@ -142,18 +146,20 @@ class Network:
             self.send_hello(ip, port)
 
     def _decode_data(self, data):
-        data_array = re.findall(r'\[([^\]]+)\]', data)
-        if data_array[0] == '0' or data_array[0] == '4':
+        data_array = re.findall(r"\[([^\]]+)\]", data)
+        if data_array[0] == "0" or data_array[0] == "4":
             label = data_array[1]
             ip_address = data_array[2]
             port = int(data_array[3])
             cert = data_array[4]
             # TODO: Validate cert here
             data_type = int(data_array[0])
-            return data_type, HelloMessage(neighbor_label=label, ip=ip_address, port=port, cert=cert)
-        elif data_array[1] == '1':
+            return data_type, HelloMessage(
+                neighbor_label=label, ip=ip_address, port=port, cert=cert
+            )
+        elif data_array[1] == "1":
             return 1, "TODO"
-        elif data_array[2] == '2':
+        elif data_array[2] == "2":
             return 2, "TODO"
         else:
             return -1, "DATA GETS IGNORED, SINCE TYPE -1 DOESN'T EXIST"
@@ -211,7 +217,9 @@ class Node(multiprocessing.Process):
         comm = SocketCommunication(address, port)
         # TODO use actual cert here
         cert = "ULTRA_CERT"
-        hello_message = HelloMessage(neighbor_label=label, ip=address, port=port, cert=cert)
+        hello_message = HelloMessage(
+            neighbor_label=label, ip=address, port=port, cert=cert
+        )
 
         self.ndn = Network(label, all_nodes, k, comm, hello_delay, hello_message)
 
