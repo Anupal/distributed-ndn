@@ -51,13 +51,17 @@ class Network:
         }
         print(f"NEAREST {k} NODES: {self.k_nearest}")
 
-    def __init__(self, label, all_nodes, k, comm, hello_delay) -> None:
+    def __init__(self, label, all_nodes, k, comm) -> None:
         self.comm: SocketCommunication = comm
         self.label = label
         self._simulate_physical_layer(all_nodes, k)
 
         self.neighbor_table = {}
         self.pit = {}
+
+        self.comm.register_callback(self.hello_handler)
+        # self.comm.register_callback(self.data_handler)
+        # self.comm.register_callback(self.interest_handler)
 
     def send_hello(self):
         ...
@@ -71,10 +75,29 @@ class Network:
             ip, port = self.k_nearest[node]
             self.comm.send(ip, port, "hello")
 
-    def callback_hello(data):
+    def hello_handler(self, data):
         """
-        Handle FIB update here.
+        Callback for hello packets. This will be called by SocketCommunication object.
+        This will handle FIB update here.
         """
+
+        print("Hello handler: data=", data)
+
+    def interest_handler(self, data):
+        """
+        Callback for interest packets. This will be called by SocketCommunication object.
+        This will handle PIT updates and interest propagation.
+        """
+
+        print("Interest handler: data=", data)
+
+    def data_handler(self, data):
+        """
+        Callback for data packets. This will be called by SocketCommunication object.
+        This will handle PIT updates and data propagation.
+        """
+
+        print("Data handler: data=", data)
 
 
 def euclidean_distance(p1, p2):
@@ -97,7 +120,7 @@ class Node(multiprocessing.Process):
         self.hello_delay = hello_delay
 
         comm = SocketCommunication(address, port)
-        self.ndn = Network(label, all_nodes, k, comm, hello_delay)
+        self.ndn = Network(label, all_nodes, k, comm)
 
     def run(self):
         """
