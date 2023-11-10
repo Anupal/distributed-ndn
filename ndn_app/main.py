@@ -8,7 +8,7 @@ def main():
     args = sys.argv
 
     if len(args) < 2:
-        print("Format: python3 tests/comm.py <label> <sport> <dport>")
+        print("Format: python3 ndn_app/main.py <label>")
         exit(1)
 
     label = int(args[1])
@@ -18,16 +18,14 @@ def main():
 
     print(f"STARTING NODE {label}")
 
-    node = Node(
+    Node(
         label,
         "127.0.0.1",
         sport,
         constants.NODES,
         constants.MINIMUM_NEIGHBORS,
         constants.HELLO_DELAY,
-    )
-
-    node.ndn.send_hellos()
+    ).start()
 
 
 if __name__ == "__main__":

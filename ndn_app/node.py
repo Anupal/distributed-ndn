@@ -1,8 +1,68 @@
+from copy import copy
 from math import sqrt
 
 import multiprocessing
 import socket
 import threading
+import time
+import constants
+import re
+
+
+class HelloMessage:
+    """
+    Class for HELLO, its source label and the issued certificate
+    """
+
+    def __init__(self, neighbor_label, ip, port, cert):
+        self.certificate = cert
+        self.neighbour_label = neighbor_label
+        self.ip = ip
+        self.port = port
+
+    def get_string(self, ack=False):
+        id = constants.HELLO_ID
+        if ack:
+            id = constants.HELLO_ACK_ID
+        return f"[{id}][{self.neighbour_label}][{self.ip}][{self.port}][{self.certificate}]"
+
+
+class FIB:
+    """
+    Data structure for FIB table. Table is represented as dictionary with the labels being the
+    key and the rest being the value in form of instances of the FIB_ROW class
+    """
+
+    class FIB_Row:
+        def __init__(self, tcp_ip, tcp_port, certificate):
+            self.tcp_ip = tcp_ip
+            self.tcp_port = tcp_port
+            self.certificate = certificate
+            self.hello_count = 1
+
+        def increment_hello_count(self):
+            self.hello_count += 1
+
+        def decrement_hello_count(self):
+            self.hello_count -= 1
+            return self.hello_count > 0
+
+    def __init__(self):
+        self.table = {}
+
+    def received_hello(self, hello_message: HelloMessage):
+        if hello_message.neighbour_label in self.table:
+            if not self.table[hello_message.neighbour_label] == constants.MAX_HELLO_COUNT:
+                self.table[hello_message.neighbour_label].increment_hello_count()
+        else:
+            self.table[hello_message.neighbour_label] = self.FIB_Row(hello_message.ip, hello_message.port,
+                                                                     hello_message.certificate)
+
+    def update_counts(self):
+        for each_key in copy(self.table).keys():
+            count_bigger_zero = self.table[each_key].decrement_hello_count()
+            if not count_bigger_zero:
+                del self.table[each_key]
 
 
 class Network:
@@ -14,6 +74,8 @@ class Network:
         * Sends hello packets periodically
             - FORMAT: [HELLO|SOURCE_LABEL|CERTIFICATE]
         * Handles received hello packets and authenticates using crypto module
+        * Handles Interest and Data packets
+        * Updates PIT and Content Store
         * Handles Interest and Data packets
         * Updates PIT and Content Store
     """
@@ -50,15 +112,25 @@ class Network:
         }
         print(f"NEAREST {k} NODES: {self.k_nearest}")
 
-    def __init__(self, label, all_nodes, k, comm) -> None:
+    def __init__(self, label, all_nodes, k, comm, hello_delay, hello_message) -> None:
         self.comm: SocketCommunication = comm
         self.label = label
         self._simulate_physical_layer(all_nodes, k)
+        self.hello_delay = hello_delay
+        self.hello_message = hello_message
 
-        self.neighbor_table = {}
+        self.neighbor_table = FIB()
         self.pit = {}
 
-        while True
+        self.comm.register_callback(self.hello_handler)
+        # self.comm.register_callback(self.data_handler)
+        # self.comm.register_callback(self.interest_handler)
+
+    def send_hello(self, ip, port):
+        self.comm.send(ip, port, self.hello_message.get_string())
+
+    def send_hello_ack(self, ip, port):
+        self.comm.send(ip, port, self.hello_message.get_string(ack=True))
 
     def send_hellos(self):
         """
@@ -67,7 +139,54 @@ class Network:
 
         for node in self.k_nearest:
             ip, port = self.k_nearest[node]
-            self.comm.send(ip, port, "hello")
+            self.send_hello(ip, port)
+
+    def _decode_data(self, data):
+        data_array = re.findall(r'\[([^\]]+)\]', data)
+        if data_array[0] == '0' or data_array[0] == '4':
+            label = data_array[1]
+            ip_address = data_array[2]
+            port = int(data_array[3])
+            cert = data_array[4]
+            # TODO: Validate cert here
+            data_type = int(data_array[0])
+            return data_type, HelloMessage(neighbor_label=label, ip=ip_address, port=port, cert=cert)
+        elif data_array[1] == '1':
+            return 1, "TODO"
+        elif data_array[2] == '2':
+            return 2, "TODO"
+        else:
+            return -1, "DATA GETS IGNORED, SINCE TYPE -1 DOESN'T EXIST"
+
+    def hello_handler(self, data):
+        """
+        Callback for hello packets. This will be called by SocketCommunication object.
+        This will handle FIB update here.
+        """
+
+        print("Hello handler: data=", data)
+        data_type, decoded_data = self._decode_data(data)
+
+        if data_type == 0 or data_type == 4:
+            self.neighbor_table.received_hello(decoded_data)
+            if data_type == 0:
+                self.send_hello_ack(decoded_data.ip, decoded_data.port)
+
+    def interest_handler(self, data):
+        """
+        Callback for interest packets. This will be called by SocketCommunication object.
+        This will handle PIT updates and interest propagation.
+        """
+
+        print("Interest handler: data=", data)
+
+    def data_handler(self, data):
+        """
+        Callback for data packets. This will be called by SocketCommunication object.
+        This will handle PIT updates and data propagation.
+        """
+
+        print("Data handler: data=", data)
 
 
 def euclidean_distance(p1, p2):
@@ -85,20 +204,32 @@ class Node(multiprocessing.Process):
     """
 
     def __init__(self, label, address, port, all_nodes, k, hello_delay):
+        super().__init__()
         self.label = label
+        self.hello_delay = hello_delay
 
         comm = SocketCommunication(address, port)
-        self.ndn = Network(label, all_nodes, k, comm, hello_delay)
+        # TODO use actual cert here
+        cert = "ULTRA_CERT"
+        hello_message = HelloMessage(neighbor_label=label, ip=address, port=port, cert=cert)
+
+        self.ndn = Network(label, all_nodes, k, comm, hello_delay, hello_message)
 
     def run(self):
         """
         Main Application loop.
         """
 
+        # Send hello:
         self.ndn.comm.listen()
+        self.ndn.send_hellos()
+        time.sleep(self.hello_delay + 2)
 
+        # Main loop:
         while True:
             self.ndn.send_hellos()
+            time.sleep(self.hello_delay)
+            self.ndn.neighbor_table.update_counts()
 
 
 class SocketCommunication:

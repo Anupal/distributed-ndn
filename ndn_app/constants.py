@@ -1,4 +1,5 @@
 import random
+from copy import copy
 
 ### NODES CORE
 RPI1_IP = "127.0.0.1"
@@ -39,9 +40,17 @@ NODES_2 = {
     for i in range(NUM_NODES // 2, NUM_NODES)
 }
 
-NODES = NODES_1 | NODES_2
+NODES = copy(NODES_1)
+NODES.update(NODES_2)
 
 ### NEIGHBOR DISCOVERY ###
 MINIMUM_NEIGHBORS = 5
 HELLO_DELAY = 1
 HELLO_TIMEOUT = 3
+MAX_HELLO_COUNT = 5
+
+### PACKAGE STRUCTURE ###
+HELLO_ID = 0
+HELLO_ACK_ID = 4
+DATA_ID = 1
+INTEREST_ID = 2
