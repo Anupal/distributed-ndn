@@ -151,7 +151,7 @@ class Network:
             )
             for node in k_nearest
         }
-        print(f"NEAREST {k} NODES: {self.k_nearest}")
+        # print(f"NEAREST {k} NODES: {self.k_nearest}")
 
     def __init__(self, label, all_nodes, k, comm, hello_delay, hello_message) -> None:
         self.comm: SocketCommunication = comm
@@ -165,15 +165,34 @@ class Network:
         self.neighbor_table = FIB()
         self.pit = {}
 
+        self.packet_counters = {
+            "in": {
+                "hello": 0,
+                "hello_ack": 0,
+                "interest": 0,
+                "data": 0,
+            },
+            "out": {
+                "hello": 0,
+                "hello_ack": 0,
+                "interest_org": 0,
+                "interest_fwd": 0,
+                "data_org": 0,
+                "data_fwd": 0,
+            },
+        }
+
         self.comm.register_callback(self.hello_handler)
         self.comm.register_callback(self.data_handler)
         self.comm.register_callback(self.interest_handler)
 
     def send_hello(self, ip, port):
         self.comm.send(ip, port, self.hello_message.get_string())
+        self.packet_counters["out"]["hello"] += 1
 
     def send_hello_ack(self, ip, port):
         self.comm.send(ip, port, self.hello_message.get_string(ack=True))
+        self.packet_counters["out"]["hello_ack"] += 1
 
     def send_hellos(self):
         """
@@ -195,6 +214,7 @@ class Network:
                 self.neighbor_table.table[neighbor_label].tcp_port,
                 payload,
             )
+            self.packet_counters["out"]["interest_org"] += 1
 
     def forward_interests(self, data_address, retry_index, ignore_neighbor=""):
         """
@@ -209,6 +229,7 @@ class Network:
                     self.neighbor_table.table[neighbor_label].tcp_port,
                     payload,
                 )
+                self.packet_counters["out"]["interest_fwd"] += 1
 
     def send_data(self, neighbor_label, data_address, data):
         payload = DataMessage(self.label, data_address, data).get_string()
@@ -217,6 +238,7 @@ class Network:
             self.neighbor_table.table[neighbor_label].tcp_port,
             payload,
         )
+        self.packet_counters["out"]["data_org"] += 1
 
     def forward_data(self, data_address, data):
         payload = DataMessage(self.label, data_address, data).get_string()
@@ -229,6 +251,7 @@ class Network:
                     payload,
                 )
                 self.pit.pop((ref_data_address, neighbor_label))
+                self.packet_counters["out"]["data_fwd"] += 1
 
     def _decode_data(self, data):
         data_array = re.findall(r"\[([^\]]+)\]", data)
@@ -264,6 +287,11 @@ class Network:
         data_type, message = self._decode_data(data)
 
         if data_type == 0 or data_type == 4:
+            if data_type == 0:
+                self.packet_counters["in"]["hello"] += 1
+            if data_type == 4:
+                self.packet_counters["in"]["hello_ack"] += 1
+
             self.neighbor_table.received_hello(message)
             if data_type == 0:
                 self.send_hello_ack(message.ip, message.port)
@@ -276,11 +304,12 @@ class Network:
         data_type, message = self._decode_data(data)
 
         if data_type == 2:
+            self.packet_counters["in"]["interest"] += 1
             # Check if I own the data
             sensor_data = self.sensor_data_callback(message.data_address)
 
             if sensor_data:
-                print(f"I own the data {message.data_address} : {sensor_data}")
+                # print(f"I own the data {message.data_address} : {sensor_data}")
                 self.send_data(message.label, message.data_address, sensor_data)
 
             # Forward interest message
@@ -291,9 +320,10 @@ class Network:
                         self.pit[(message.data_address, message.label)]
                         >= message.retry_index
                     ):
-                        print(
-                            f"Duplicate interest packet MINE:{self.pit[(message.data_address, message.label)]} IN:{message.retry_index}"
-                        )
+                        ...
+                        # print(
+                        #     f"Duplicate interest packet MINE:{self.pit[(message.data_address, message.label)]} IN:{message.retry_index}"
+                        # )
                     # Retry interest
                     else:
                         self.pit[
@@ -319,6 +349,7 @@ class Network:
         data_type, message = self._decode_data(data)
 
         if data_type == 1:
+            self.packet_counters["in"]["data"] += 1
             if not self.originator_callback(message.data_address, message.data):
                 self.forward_data(message.data_address, message.data)
 
@@ -337,8 +368,12 @@ class Node(multiprocessing.Process):
         * Sensor/Actuator
     """
 
-    def __init__(self, label, data_address, address, port, all_nodes, k, hello_delay):
+    def __init__(
+        self, x, y, label, data_address, address, port, all_nodes, k, hello_delay, mgmt
+    ):
         super().__init__()
+        self.x = x
+        self.y = y
         self.label = label
         self.hello_delay = hello_delay
 
@@ -351,6 +386,7 @@ class Node(multiprocessing.Process):
         self.ndn = Network(label, all_nodes, k, comm, hello_delay, hello_message)
         self.ndn.sensor_data_callback = self.sensor_handler
         self.ndn.originator_callback = self.originator_handler
+        self.mgmt = mgmt
 
     def originate_interest(self, data_address, retry_index):
         self.client_data_address = data_address
@@ -358,7 +394,7 @@ class Node(multiprocessing.Process):
 
     def originator_handler(self, data_address, data):
         if data_address == self.client_data_address:
-            print(f"Sensor value received: {data_address} = {data}")
+            print(f"Sensor value received: {data_address} = {data}", flush=True)
             self.client_data_address = ""
             return True
 
@@ -375,10 +411,13 @@ class Node(multiprocessing.Process):
                 json.dumps(
                     {
                         self.label: {
+                            "x": self.x,
+                            "y": self.y,
                             "comm": {
                                 "server_ip": self.ndn.comm.address,
                                 "server_port": self.ndn.comm.port,
                             },
+                            "packet_counters": self.ndn.packet_counters,
                             "data_address": self.data_address,
                             "label": self.label,
                             "ndn": {
@@ -415,13 +454,8 @@ class Node(multiprocessing.Process):
         time.sleep(self.hello_delay + 2)
 
         # Main loop:
-        i = 0
         flip = 0
         while True:
-            if self.label == 0:
-                self.originate_interest("/data/2", i)
-            i += 1
-
             self.ndn.send_hellos()
             time.sleep(self.hello_delay)
 
@@ -431,6 +465,25 @@ class Node(multiprocessing.Process):
                 flip = 0
             else:
                 flip += 1
+
+            # Handle mgmt commands if any
+            if not self.mgmt.empty():
+                task = self.mgmt.get()
+                print("MGMT task:", task, flush=True)
+                print(f"*** Node={self.label} ***")
+                if task["call"] == "send_interest_packet":
+                    self.originate_interest(task["args"][0], task["args"][1])
+                elif task["call"] == "print_fib":
+                    print(f"FIB:{self.ndn.neighbor_table}")
+                elif task["call"] == "print_pit":
+                    print(f"PIT:{self.ndn.pit}")
+                elif task["call"] == "print_counters":
+                    print("INPUT COUNTERS:")
+                    for counter in self.ndn.packet_counters["in"]:
+                        print(f"{counter}: {self.ndn.packet_counters['in'][counter]}")
+                    print("OUTPUT COUNTERS:")
+                    for counter in self.ndn.packet_counters["out"]:
+                        print(f"{counter}: {self.ndn.packet_counters['out'][counter]}")
 
             self.save_state()
 
@@ -455,7 +508,8 @@ class SocketCommunication:
         try:
             client_socket.connect((dest_address, dest_port))
         except Exception:
-            print(f"Can't connect to {(dest_address, dest_port)}")
+            ...
+            # print(f"Can't connect to {(dest_address, dest_port)}")
         else:
             client_socket.send(data.encode("utf-8"))
 
@@ -489,7 +543,7 @@ class SocketCommunication:
         """
         Setup TCP server and start listener thread.
         """
-        print(f"Listening on {self.address}:{self.port}")
+        # print(f"Listening on {self.address}:{self.port}")
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server_socket.bind((self.address, self.port))
         self.server_socket.listen(5)
