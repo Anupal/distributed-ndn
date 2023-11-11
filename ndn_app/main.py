@@ -20,6 +20,7 @@ def main():
 
     Node(
         label,
+        f"/data/{label}",
         "127.0.0.1",
         sport,
         constants.NODES,

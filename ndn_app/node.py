@@ -2,6 +2,7 @@ from copy import copy
 from math import sqrt
 
 import multiprocessing
+import random
 import socket
 import threading
 import time
@@ -9,14 +10,28 @@ import constants
 import re
 
 
+class InterestMessage:
+    """
+    Class for INTEREST, its source label, data address and retry index.
+    """
+
+    def __init__(self, data_address, label, retry_index):
+        self.data_address = data_address
+        self.label = label
+        self.retry_index = retry_index
+
+    def get_string(self):
+        return f"[2][{self.label}][{self.data_address}][{self.retry_index}]"
+
+
 class HelloMessage:
     """
     Class for HELLO, its source label and the issued certificate
     """
 
-    def __init__(self, neighbor_label, ip, port, cert):
+    def __init__(self, label, ip, port, cert):
         self.certificate = cert
-        self.neighbour_label = neighbor_label
+        self.label = label
         self.ip = ip
         self.port = port
 
@@ -24,7 +39,21 @@ class HelloMessage:
         id = constants.HELLO_ID
         if ack:
             id = constants.HELLO_ACK_ID
-        return f"[{id}][{self.neighbour_label}][{self.ip}][{self.port}][{self.certificate}]"
+        return f"[{id}][{self.label}][{self.ip}][{self.port}][{self.certificate}]"
+
+
+class DataMessage:
+    """
+    Class for DATA, its source label, data address and actual data.
+    """
+
+    def __init__(self, label, data_address, data):
+        self.label = label
+        self.data_address = data_address
+        self.data = data
+
+    def get_string(self):
+        return f"[1][{self.label}][{self.data_address}][{self.data}]"
 
 
 class FIB:
@@ -40,6 +69,9 @@ class FIB:
             self.certificate = certificate
             self.hello_count = 1
 
+        def __repr__(self) -> str:
+            return f"(comm={self.tcp_ip}:{self.tcp_port} count={self.hello_count})"
+
         def increment_hello_count(self):
             self.hello_count += 1
 
@@ -50,16 +82,23 @@ class FIB:
     def __init__(self):
         self.table = {}
 
+    def __repr__(self) -> str:
+        return ", ".join([f"({self.table[row]})" for row in self.table])
+
     def received_hello(self, hello_message: HelloMessage):
-        if hello_message.neighbour_label in self.table:
-            if not self.table[hello_message.neighbour_label] == constants.MAX_HELLO_COUNT:
-                self.table[hello_message.neighbour_label].increment_hello_count()
+        if hello_message.label in self.table:
+            if self.table[hello_message.label].hello_count <= constants.MAX_HELLO_COUNT:
+                self.table[hello_message.label].increment_hello_count()
         else:
-            self.table[hello_message.neighbour_label] = self.FIB_Row(hello_message.ip, hello_message.port,
-                                                                     hello_message.certificate)
+            self.table[hello_message.label] = self.FIB_Row(
+                hello_message.ip, hello_message.port, hello_message.certificate
+            )
 
     def update_counts(self):
-        for each_key in copy(self.table).keys():
+        """
+        Decrement all hello counts in FIB.
+        """
+        for each_key in copy(self.table):
             count_bigger_zero = self.table[each_key].decrement_hello_count()
             if not count_bigger_zero:
                 del self.table[each_key]
@@ -115,6 +154,8 @@ class Network:
     def __init__(self, label, all_nodes, k, comm, hello_delay, hello_message) -> None:
         self.comm: SocketCommunication = comm
         self.label = label
+        self.sensor_data_callback = None
+        self.originator_callback = None
         self._simulate_physical_layer(all_nodes, k)
         self.hello_delay = hello_delay
         self.hello_message = hello_message
@@ -123,8 +164,8 @@ class Network:
         self.pit = {}
 
         self.comm.register_callback(self.hello_handler)
-        # self.comm.register_callback(self.data_handler)
-        # self.comm.register_callback(self.interest_handler)
+        self.comm.register_callback(self.data_handler)
+        self.comm.register_callback(self.interest_handler)
 
     def send_hello(self, ip, port):
         self.comm.send(ip, port, self.hello_message.get_string())
@@ -141,20 +182,75 @@ class Network:
             ip, port = self.k_nearest[node]
             self.send_hello(ip, port)
 
+    def originate_interest(self, data_address, retry_index):
+        """
+        Introduce an interest packet in the network. This node will become the originator.
+        """
+        payload = InterestMessage(data_address, self.label, retry_index).get_string()
+        for neighbor_label in copy(self.neighbor_table.table):
+            self.comm.send(
+                self.neighbor_table.table[neighbor_label].tcp_ip,
+                self.neighbor_table.table[neighbor_label].tcp_port,
+                payload,
+            )
+
+    def forward_interests(self, data_address, retry_index, ignore_neighbor=""):
+        """
+        Go through FIB table and forward interests to all neighbors except ignore_neighbor which
+        forwarded the interest to us.
+        """
+        payload = InterestMessage(data_address, self.label, retry_index).get_string()
+        for neighbor_label in copy(self.neighbor_table.table):
+            if neighbor_label != ignore_neighbor:
+                self.comm.send(
+                    self.neighbor_table.table[neighbor_label].tcp_ip,
+                    self.neighbor_table.table[neighbor_label].tcp_port,
+                    payload,
+                )
+
+    def send_data(self, neighbor_label, data_address, data):
+        payload = DataMessage(self.label, data_address, data).get_string()
+        self.comm.send(
+            self.neighbor_table.table[neighbor_label].tcp_ip,
+            self.neighbor_table.table[neighbor_label].tcp_port,
+            payload,
+        )
+
+    def forward_data(self, data_address, data):
+        payload = DataMessage(self.label, data_address, data).get_string()
+
+        for ref_data_address, neighbor_label in copy(self.pit):
+            if ref_data_address == data_address:
+                self.comm.send(
+                    self.neighbor_table.table[neighbor_label].tcp_ip,
+                    self.neighbor_table.table[neighbor_label].tcp_port,
+                    payload,
+                )
+                self.pit.pop((ref_data_address, neighbor_label))
+
     def _decode_data(self, data):
-        data_array = re.findall(r'\[([^\]]+)\]', data)
-        if data_array[0] == '0' or data_array[0] == '4':
-            label = data_array[1]
+        data_array = re.findall(r"\[([^\]]+)\]", data)
+        if data_array[0] == "0" or data_array[0] == "4":
+            label = int(data_array[1])
             ip_address = data_array[2]
             port = int(data_array[3])
             cert = data_array[4]
             # TODO: Validate cert here
             data_type = int(data_array[0])
-            return data_type, HelloMessage(neighbor_label=label, ip=ip_address, port=port, cert=cert)
-        elif data_array[1] == '1':
-            return 1, "TODO"
-        elif data_array[2] == '2':
-            return 2, "TODO"
+            return data_type, HelloMessage(
+                label=label, ip=ip_address, port=port, cert=cert
+            )
+        elif data_array[0] == "1":
+            label = int(data_array[1])
+            data_address = data_array[2]
+            data_payload = data_array[3]
+            return 1, DataMessage(label, data_address, data_payload)
+        elif data_array[0] == "2":
+            label = int(data_array[1])
+            data_address = data_array[2]
+            retry_index = int(data_array[3])
+            data_type = int(data_array[0])
+            return 2, InterestMessage(data_address, label, retry_index)
         else:
             return -1, "DATA GETS IGNORED, SINCE TYPE -1 DOESN'T EXIST"
 
@@ -163,30 +259,67 @@ class Network:
         Callback for hello packets. This will be called by SocketCommunication object.
         This will handle FIB update here.
         """
-
-        print("Hello handler: data=", data)
-        data_type, decoded_data = self._decode_data(data)
+        data_type, message = self._decode_data(data)
 
         if data_type == 0 or data_type == 4:
-            self.neighbor_table.received_hello(decoded_data)
+            self.neighbor_table.received_hello(message)
             if data_type == 0:
-                self.send_hello_ack(decoded_data.ip, decoded_data.port)
+                self.send_hello_ack(message.ip, message.port)
 
     def interest_handler(self, data):
         """
         Callback for interest packets. This will be called by SocketCommunication object.
         This will handle PIT updates and interest propagation.
         """
+        data_type, message = self._decode_data(data)
 
-        print("Interest handler: data=", data)
+        if data_type == 2:
+            # Check if I own the data
+            sensor_data = self.sensor_data_callback(message.data_address)
+
+            if sensor_data:
+                print(f"I own the data {message.data_address} : {sensor_data}")
+                self.send_data(message.label, message.data_address, sensor_data)
+
+            # Forward interest message
+            else:
+                if (message.data_address, message.label) in self.pit:
+                    # Detect interest loop (duplicate interest)
+                    if (
+                        self.pit[(message.data_address, message.label)]
+                        >= message.retry_index
+                    ):
+                        print(
+                            f"Duplicate interest packet MINE:{self.pit[(message.data_address, message.label)]} IN:{message.retry_index}"
+                        )
+                    # Retry interest
+                    else:
+                        self.pit[
+                            (message.data_address, message.label)
+                        ] = message.retry_index
+                        self.forward_interests(
+                            message.data_address, message.retry_index, message.label
+                        )
+                # New interest
+                else:
+                    self.pit[
+                        (message.data_address, message.label)
+                    ] = message.retry_index
+                    self.forward_interests(
+                        message.data_address, message.retry_index, message.label
+                    )
 
     def data_handler(self, data):
         """
         Callback for data packets. This will be called by SocketCommunication object.
         This will handle PIT updates and data propagation.
         """
+        data_type, message = self._decode_data(data)
 
-        print("Data handler: data=", data)
+        if data_type == 1:
+            print("Data handler: data=", data)
+            if not self.originator_callback(message.data_address, message.data):
+                self.forward_data(message.data_address, message.data)
 
 
 def euclidean_distance(p1, p2):
@@ -203,7 +336,7 @@ class Node(multiprocessing.Process):
         * Sensor/Actuator
     """
 
-    def __init__(self, label, address, port, all_nodes, k, hello_delay):
+    def __init__(self, label, data_address, address, port, all_nodes, k, hello_delay):
         super().__init__()
         self.label = label
         self.hello_delay = hello_delay
@@ -211,25 +344,59 @@ class Node(multiprocessing.Process):
         comm = SocketCommunication(address, port)
         # TODO use actual cert here
         cert = "ULTRA_CERT"
-        hello_message = HelloMessage(neighbor_label=label, ip=address, port=port, cert=cert)
-
+        hello_message = HelloMessage(label=label, ip=address, port=port, cert=cert)
+        self.data_address = data_address
+        self.client_data_address = ""
         self.ndn = Network(label, all_nodes, k, comm, hello_delay, hello_message)
+        self.ndn.sensor_data_callback = self.sensor_handler
+        self.ndn.originator_callback = self.originator_handler
+
+    def originate_interest(self, data_address, retry_index):
+        self.client_data_address = data_address
+        self.ndn.originate_interest(self.client_data_address, retry_index)
+
+    def originator_handler(self, data_address, data):
+        if data_address == self.client_data_address:
+            print(f"Sensor value received: {data_address} = {data}")
+            self.client_data_address = ""
+            return True
+
+    def sensor_handler(self, data_address):
+        if data_address == self.data_address:
+            return random.random()
 
     def run(self):
         """
         Main Application loop.
         """
 
-        # Send hello:
+        # start TCP listener
         self.ndn.comm.listen()
+
+        # Send initial hellos to pre-populate tables
         self.ndn.send_hellos()
         time.sleep(self.hello_delay + 2)
 
         # Main loop:
+        i = 0
+        flip = 0
         while True:
+            print("FIB:", self.ndn.neighbor_table.table)
+            print("PIT:", self.ndn.pit)
+
+            if self.label == 0:
+                self.originate_interest("/data/2", i)
+            i += 1
+
             self.ndn.send_hellos()
             time.sleep(self.hello_delay)
-            self.ndn.neighbor_table.update_counts()
+
+            # decrement hello counts after two cycles
+            if flip > 0:
+                self.ndn.neighbor_table.update_counts()
+                flip = 0
+            else:
+                flip += 1
 
 
 class SocketCommunication:
@@ -248,7 +415,7 @@ class SocketCommunication:
     def send(self, dest_address, dest_port, data):
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-        print(f"Sending message '{data}' to {(dest_address, dest_port)}")
+        # print(f"Sending message '{data}' to {(dest_address, dest_port)}")
         try:
             client_socket.connect((dest_address, dest_port))
         except Exception:
@@ -262,7 +429,7 @@ class SocketCommunication:
 
         """
         data = peer_connection.recv(1024).decode("utf-8")
-        print(f"Received message '{data}' from {peer_address}")
+        # print(f"Received message '{data}' from {peer_address}")
 
         # Execute all registered callbacks
         for callback in self.callbacks:
