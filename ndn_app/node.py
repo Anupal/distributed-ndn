@@ -1,7 +1,9 @@
 from copy import copy
 from math import sqrt
 
+import json
 import multiprocessing
+import os
 import random
 import socket
 import threading
@@ -317,7 +319,6 @@ class Network:
         data_type, message = self._decode_data(data)
 
         if data_type == 1:
-            print("Data handler: data=", data)
             if not self.originator_callback(message.data_address, message.data):
                 self.forward_data(message.data_address, message.data)
 
@@ -365,6 +366,42 @@ class Node(multiprocessing.Process):
         if data_address == self.data_address:
             return random.random()
 
+    def save_state(self):
+        if not os.path.exists("stats"):
+            # Create the directory if it doesn't exist
+            os.makedirs("stats")
+        with open(f"stats/{self.label}", "w") as file:
+            file.write(
+                json.dumps(
+                    {
+                        self.label: {
+                            "comm": {
+                                "server_ip": self.ndn.comm.address,
+                                "server_port": self.ndn.comm.port,
+                            },
+                            "data_address": self.data_address,
+                            "label": self.label,
+                            "ndn": {
+                                "fib": [
+                                    {
+                                        "label": nei,
+                                        "hello_count": self.ndn.neighbor_table.table[
+                                            nei
+                                        ].hello_count,
+                                    }
+                                    for nei in self.ndn.neighbor_table.table
+                                ],
+                                "pit": [
+                                    {"data_address": data_address, "label": label}
+                                    for data_address, label in self.ndn.pit
+                                ],
+                            },
+                        }
+                    },
+                    indent=2,
+                )
+            )
+
     def run(self):
         """
         Main Application loop.
@@ -381,9 +418,6 @@ class Node(multiprocessing.Process):
         i = 0
         flip = 0
         while True:
-            print("FIB:", self.ndn.neighbor_table.table)
-            print("PIT:", self.ndn.pit)
-
             if self.label == 0:
                 self.originate_interest("/data/2", i)
             i += 1
@@ -397,6 +431,8 @@ class Node(multiprocessing.Process):
                 flip = 0
             else:
                 flip += 1
+
+            self.save_state()
 
 
 class SocketCommunication:
