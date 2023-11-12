@@ -4,7 +4,6 @@ import faker
 
 class MedicalSensorSystem:
     def __init__(self):
-        # Initialize the sensor data dictionary with fake patient data
         self.sensor_data = {
             'PatientInfo': self.generate_fake_patient_data(),
             'HeartRate': {
@@ -47,7 +46,6 @@ class MedicalSensorSystem:
         }
 
     def generate_fake_patient_data(self):
-        # Generate fake patient data using the Faker library
         fake = faker.Faker()
         return {
             'PatientID': fake.uuid4(),
@@ -98,13 +96,10 @@ class MedicalSensorSystem:
         # Placeholder conversion from percentage to fractional
         return percentage_value / 100.0
 
-# Example usage:
 sensor_system = MedicalSensorSystem()
 
-# Display and return patient data
 sensor_system.print_patient_data()
 
-# Get and print data based on user input
 user_input = input("Enter the sensor data you want (e.g., 'all', 'HeartRate', 'Temperature.Celsius' or 'Temperature.Fahrenheit'): ")
 sensor_system.print_sensor_data(user_input)
 
