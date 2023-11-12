@@ -211,9 +211,9 @@ class Network:
 
     def _generate_request_id(self):
         characters = string.ascii_letters + string.digits
-        random_string = ''.join(random.choice(characters) for _ in range(5))
+        random_string = "".join(random.choice(characters) for _ in range(5))
         return random_string
-    
+
     def originate_interest(self, data_address, retry_index):
         """
         Introduce an interest packet in the network. This node will become the originator.
@@ -221,8 +221,10 @@ class Network:
         # random string for request index
         request_id = self._generate_request_id()
 
-        payload = InterestMessage(data_address, self.label, request_id, retry_index).get_string()
-        
+        payload = InterestMessage(
+            data_address, self.label, request_id, retry_index
+        ).get_string()
+
         for neighbor_label in copy(self.neighbor_table.table):
             self.comm.send(
                 self.neighbor_table.table[neighbor_label].tcp_ip,
@@ -231,15 +233,19 @@ class Network:
             )
             self.packet_counters["out"]["interest_org"] += 1
             self.last_10_packets.append("OUT: " + payload)
-        
+
         return request_id
 
-    def forward_interests(self, data_address, retry_index, request_id, ignore_neighbor=""):
+    def forward_interests(
+        self, data_address, retry_index, request_id, ignore_neighbor=""
+    ):
         """
         Go through FIB table and forward interests to all neighbors except ignore_neighbor which
         forwarded the interest to us.
         """
-        payload = InterestMessage(data_address, self.label, request_id, retry_index).get_string()
+        payload = InterestMessage(
+            data_address, self.label, request_id, retry_index
+        ).get_string()
         for neighbor_label in copy(self.neighbor_table.table):
             if neighbor_label != ignore_neighbor:
                 self.comm.send(
@@ -251,7 +257,9 @@ class Network:
                 self.last_10_packets.append("OUT: " + payload)
 
     def send_data(self, neighbor_label, data_address, request_id, retry_index, data):
-        payload = DataMessage(self.label, data_address, request_id, retry_index, data).get_string()
+        payload = DataMessage(
+            self.label, data_address, request_id, retry_index, data
+        ).get_string()
         self.comm.send(
             self.neighbor_table.table[neighbor_label].tcp_ip,
             self.neighbor_table.table[neighbor_label].tcp_port,
@@ -263,7 +271,9 @@ class Network:
     def forward_data(self, data_address, request_id, retry_index, data):
         if (data_address, request_id, retry_index) in self.pit:
             neighbor_label = self.pit[(data_address, request_id, retry_index)]
-            payload = DataMessage(self.label, data_address, request_id, retry_index, data).get_string()
+            payload = DataMessage(
+                self.label, data_address, request_id, retry_index, data
+            ).get_string()
 
             self.comm.send(
                 self.neighbor_table.table[neighbor_label].tcp_ip,
@@ -293,7 +303,9 @@ class Network:
             retry_index = int(data_array[4])
             data_payload = data_array[5]
             data_type = int(data_array[0])
-            return 1, DataMessage(label, data_address, request_id, retry_index, data_payload)
+            return 1, DataMessage(
+                label, data_address, request_id, retry_index, data_payload
+            )
         elif data_array[0] == "2":
             label = int(data_array[1])
             data_address = data_array[2]
@@ -336,20 +348,33 @@ class Network:
 
             if sensor_data:
                 # print(f"I own the data {message.data_address} : {sensor_data}")
-                self.send_data(message.label, message.data_address, message.request_id, message.retry_index, sensor_data)
+                self.send_data(
+                    message.label,
+                    message.data_address,
+                    message.request_id,
+                    message.retry_index,
+                    sensor_data,
+                )
 
             # Forward interest message
             else:
                 # Detect interest loop (duplicate interest)
-                if (message.data_address, message.request_id, message.retry_index) in self.pit:
-                    ... # Drop interest (do nothing)
+                if (
+                    message.data_address,
+                    message.request_id,
+                    message.retry_index,
+                ) in self.pit:
+                    ...  # Drop interest (do nothing)
                 # New interest or retry interest
                 else:
                     self.pit[
                         (message.data_address, message.request_id, message.retry_index)
                     ] = message.label
                     self.forward_interests(
-                        message.data_address, message.retry_index, message.request_id, message.label
+                        message.data_address,
+                        message.retry_index,
+                        message.request_id,
+                        message.label,
                     )
 
     def data_handler(self, data):
@@ -363,8 +388,15 @@ class Network:
             self.packet_counters["in"]["data"] += 1
             self.last_10_packets.append("IN: " + message.get_string())
 
-            if not self.originator_callback(message.data_address, message.request_id, message.data):
-                self.forward_data(message.data_address, message.request_id, message.retry_index, message.data)
+            if not self.originator_callback(
+                message.data_address, message.request_id, message.data
+            ):
+                self.forward_data(
+                    message.data_address,
+                    message.request_id,
+                    message.retry_index,
+                    message.data,
+                )
 
 
 def euclidean_distance(p1, p2):
@@ -445,7 +477,14 @@ class Node(multiprocessing.Process):
                                     for nei in self.ndn.neighbor_table.table
                                 ],
                                 "pit": [
-                                    {"data_address": data_address, "request_id": request_id, "retry_index": retry_index, "label": self.ndn.pit[(data_address, request_id, retry_index)]}
+                                    {
+                                        "data_address": data_address,
+                                        "request_id": request_id,
+                                        "retry_index": retry_index,
+                                        "label": self.ndn.pit[
+                                            (data_address, request_id, retry_index)
+                                        ],
+                                    }
                                     for data_address, request_id, retry_index in self.ndn.pit
                                 ],
                             },

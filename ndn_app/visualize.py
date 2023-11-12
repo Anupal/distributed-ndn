@@ -17,8 +17,10 @@ for node_id in NODES:
         if node_id != nei_id:
             d = euclidean_distance(NODES[node_id]["xy"], NODES[nei_id]["xy"])
             knn_candidates.append((nei_id, d))
-    
-    knn = [nei[0] for nei in sorted(knn_candidates, key= lambda x: x[1])][:MINIMUM_NEIGHBORS]
+
+    knn = [nei[0] for nei in sorted(knn_candidates, key=lambda x: x[1])][
+        :MINIMUM_NEIGHBORS
+    ]
     neighbor_dict[node_id] = knn
 
 pprint(neighbor_dict)
@@ -29,10 +31,7 @@ for node_id in neighbor_dict:
     graph.add_edges_from(edges)
 
 # visualize
-nodes_pos = {
-    node_id: NODES[node_id]["xy"]
-    for node_id in NODES
-}
+nodes_pos = {node_id: NODES[node_id]["xy"] for node_id in NODES}
 nx.draw(
     graph,
     pos=nodes_pos,
