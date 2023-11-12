@@ -57,6 +57,18 @@ def display_pit(nodes):
         print(f"Node {index} not found on this Pi!")
 
 
+def display_knn(nodes):
+    index = input("Enter node index: ")
+    if "-1" == index:
+        return
+
+    index = int(index)
+    if index in nodes:
+        nodes[index].mgmt.put({"call": "print_knn", "args": ()})
+    else:
+        print(f"Node {index} not found on this Pi!")
+
+
 def display_counters(nodes):
     index = input("Enter node index: ")
     if "-1" == index:
@@ -65,6 +77,18 @@ def display_counters(nodes):
     index = int(index)
     if index in nodes:
         nodes[index].mgmt.put({"call": "print_counters", "args": ()})
+    else:
+        print(f"Node {index} not found on this Pi!")
+
+
+def display_last_10(nodes):
+    index = input("Enter node index: ")
+    if "-1" == index:
+        return
+
+    index = int(index)
+    if index in nodes:
+        nodes[index].mgmt.put({"call": "print_last_10", "args": ()})
     else:
         print(f"Node {index} not found on this Pi!")
 
@@ -135,6 +159,12 @@ def main():
             display_counters(nodes)
         elif choice == "5":
             send_interest_packet(nodes)
+        elif choice == "9":
+            display_last_10(nodes)
+        elif choice == "10":
+            display_knn(nodes)
+        elif choice == "-1":
+            exit()
 
         time.sleep(2)
 
