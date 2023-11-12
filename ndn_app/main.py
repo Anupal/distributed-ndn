@@ -163,6 +163,8 @@ def main():
             display_last_10(nodes)
         elif choice == "10":
             display_knn(nodes)
+        elif choice == "-1":
+            exit()
 
         time.sleep(2)
 
