@@ -1,3 +1,4 @@
+from collections import deque
 from copy import copy
 from math import sqrt
 
@@ -165,6 +166,7 @@ class Network:
         self.neighbor_table = FIB()
         self.pit = {}
 
+        self.last_10_packets = deque(maxlen=10)
         self.packet_counters = {
             "in": {
                 "hello": 0,
@@ -215,6 +217,7 @@ class Network:
                 payload,
             )
             self.packet_counters["out"]["interest_org"] += 1
+            self.last_10_packets.append("OUT: " + payload)
 
     def forward_interests(self, data_address, retry_index, ignore_neighbor=""):
         """
@@ -230,6 +233,7 @@ class Network:
                     payload,
                 )
                 self.packet_counters["out"]["interest_fwd"] += 1
+                self.last_10_packets.append("OUT: " + payload)
 
     def send_data(self, neighbor_label, data_address, data):
         payload = DataMessage(self.label, data_address, data).get_string()
@@ -239,6 +243,7 @@ class Network:
             payload,
         )
         self.packet_counters["out"]["data_org"] += 1
+        self.last_10_packets.append("OUT: " + payload)
 
     def forward_data(self, data_address, data):
         payload = DataMessage(self.label, data_address, data).get_string()
@@ -252,6 +257,7 @@ class Network:
                 )
                 self.pit.pop((ref_data_address, neighbor_label))
                 self.packet_counters["out"]["data_fwd"] += 1
+                self.last_10_packets.append("OUT: " + payload)
 
     def _decode_data(self, data):
         data_array = re.findall(r"\[([^\]]+)\]", data)
@@ -305,6 +311,7 @@ class Network:
 
         if data_type == 2:
             self.packet_counters["in"]["interest"] += 1
+            self.last_10_packets.append("IN: " + message.get_string())
             # Check if I own the data
             sensor_data = self.sensor_data_callback(message.data_address)
 
@@ -350,6 +357,8 @@ class Network:
 
         if data_type == 1:
             self.packet_counters["in"]["data"] += 1
+            self.last_10_packets.append("IN: " + message.get_string())
+
             if not self.originator_callback(message.data_address, message.data):
                 self.forward_data(message.data_address, message.data)
 
@@ -418,6 +427,7 @@ class Node(multiprocessing.Process):
                                 "server_port": self.ndn.comm.port,
                             },
                             "packet_counters": self.ndn.packet_counters,
+                            "last_10_packets": list(self.ndn.last_10_packets),
                             "data_address": self.data_address,
                             "label": self.label,
                             "ndn": {
@@ -484,6 +494,12 @@ class Node(multiprocessing.Process):
                     print("OUTPUT COUNTERS:")
                     for counter in self.ndn.packet_counters["out"]:
                         print(f"{counter}: {self.ndn.packet_counters['out'][counter]}")
+                elif task["call"] == "print_knn":
+                    print("KNN:", self.ndn.k_nearest)
+                elif task["call"] == "print_last_10":
+                    print("LAST 10 Data & Interest packets")
+                    for packet in self.ndn.last_10_packets:
+                        print(packet)
 
             self.save_state()
 
