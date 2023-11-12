@@ -1,4 +1,0 @@
-networkx
-matplotlib
-pyqt6
-cryptography 
