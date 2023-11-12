@@ -12,6 +12,7 @@ import time
 import constants
 import re
 import string
+import crypto
 
 
 class InterestMessage:
@@ -24,6 +25,13 @@ class InterestMessage:
         self.label = label
         self.request_id = request_id
         self.retry_index = retry_index
+
+    def get_encrypted_string(self, public_key):
+        header = f"[2][{self.label}]"
+        encrypted_payload = crypto.encrypt_data(
+            f"[{self.data_address}][{self.request_id}][{self.retry_index}]", public_key
+        )
+        return f"{header}[{encrypted_payload}]"
 
     def get_string(self):
         return f"[2][{self.label}][{self.data_address}][{self.request_id}][{self.retry_index}]"
@@ -58,6 +66,14 @@ class DataMessage:
         self.retry_index = retry_index
         self.data_address = data_address
         self.data = data
+
+    def get_encrypted_string(self, public_key):
+        header = f"[1][{self.label}]"
+        encrypted_payload = crypto.encrypt_data(
+            f"[{self.data_address}][{self.request_id}][{self.retry_index}][{self.data}]",
+            public_key,
+        )
+        return f"{header}[{encrypted_payload}]"
 
     def get_string(self):
         return f"[1][{self.label}][{self.data_address}][{self.request_id}][{self.retry_index}][{self.data}]"
@@ -170,6 +186,8 @@ class Network:
         self.pit = {}
         self.my_pending_request = set()
 
+        self.private_key, self.public_key = crypto.generate_keys(2048)
+
         self.last_10_packets = deque(maxlen=10)
         self.packet_counters = {
             "in": {
@@ -221,9 +239,9 @@ class Network:
         # random string for request index
         request_id = self._generate_request_id()
 
-        payload = InterestMessage(
-            data_address, self.label, request_id, retry_index
-        ).get_string()
+        message_obj = InterestMessage(data_address, self.label, request_id, retry_index)
+        payload = message_obj.get_string()
+        encrypted_payload = message_obj.get_encrypted_string(self.public_key)
 
         for neighbor_label in copy(self.neighbor_table.table):
             self.comm.send(
@@ -232,7 +250,9 @@ class Network:
                 payload,
             )
             self.packet_counters["out"]["interest_org"] += 1
-            self.last_10_packets.append("OUT: " + payload)
+            self.last_10_packets.append(
+                f"[OUT]\nPLAIN: {payload}\nENCRYPT: {encrypted_payload}"
+            )
 
         return request_id
 
@@ -257,16 +277,21 @@ class Network:
                 self.last_10_packets.append("OUT: " + payload)
 
     def send_data(self, neighbor_label, data_address, request_id, retry_index, data):
-        payload = DataMessage(
+        message_obj = DataMessage(
             self.label, data_address, request_id, retry_index, data
-        ).get_string()
+        )
+        payload = message_obj.get_string()
+        encrypted_payload = message_obj.get_encrypted_string(self.public_key)
+
         self.comm.send(
             self.neighbor_table.table[neighbor_label].tcp_ip,
             self.neighbor_table.table[neighbor_label].tcp_port,
             payload,
         )
         self.packet_counters["out"]["data_org"] += 1
-        self.last_10_packets.append("OUT: " + payload)
+        self.last_10_packets.append(
+            f"[OUT]\nPLAIN: {payload}\nENCRYPT: {encrypted_payload}"
+        )
 
     def forward_data(self, data_address, request_id, retry_index, data):
         if (data_address, request_id, retry_index) in self.pit:
@@ -297,6 +322,9 @@ class Network:
                 label=label, ip=ip_address, port=port, cert=cert
             )
         elif data_array[0] == "1":
+            # decrypt payload
+            # 1. Get label 2. Get public key for label from FIB 3. Decrypt 4. If successful, break again and continue normally.
+
             label = int(data_array[1])
             data_address = data_array[2]
             request_id = data_array[3]
@@ -427,7 +455,7 @@ class Node(multiprocessing.Process):
         cert = "ULTRA_CERT"
         hello_message = HelloMessage(label=label, ip=address, port=port, cert=cert)
         self.data_address = data_address
-        self.client_requests = set()
+        self.client_requests = {}
         self.ndn = Network(label, all_nodes, k, comm, hello_delay, hello_message)
         self.ndn.sensor_data_callback = self.sensor_handler
         self.ndn.originator_callback = self.originator_handler
@@ -435,11 +463,15 @@ class Node(multiprocessing.Process):
 
     def originate_interest(self, data_address, retry_index):
         request_id = self.ndn.originate_interest(data_address, retry_index)
-        self.client_requests.add((data_address, request_id))
+        self.client_requests[(data_address, request_id)] = False
 
     def originator_handler(self, data_address, request_id, data):
+        # Check if I originally sent the request
         if (data_address, request_id) in self.client_requests:
-            print(f"Sensor value received: {data_address} = {data}", flush=True)
+            # If I have not yet received reply then print data
+            if not self.client_requests[(data_address, request_id)]:
+                self.client_requests[(data_address, request_id)] = True
+                print(f"Sensor value received: {data_address} = {data}", flush=True)
             return True
         return False
 
@@ -543,6 +575,10 @@ class Node(multiprocessing.Process):
                     print("LAST 10 Data & Interest packets")
                     for packet in self.ndn.last_10_packets:
                         print(packet)
+                elif task["call"] == "print_public_key":
+                    crypto.print_public_key(self.ndn.public_key)
+                elif task["call"] == "print_private_key":
+                    crypto.print_private_key(self.ndn.private_key)
 
             self.save_state()
 
