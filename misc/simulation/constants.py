@@ -1,8 +1,0 @@
-from math import sqrt
-
-RANDOM_SEED = 1
-GRID_SIZE = 1000
-NUM_NODES = 20
-
-CONNECTIVITY = 5
-# CONNECTIVITY = min(NUM_NODES, round(sqrt((GRID_SIZE**2) / NUM_NODES)))
