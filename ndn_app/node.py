@@ -1,6 +1,7 @@
 from collections import deque
 from copy import copy
 from math import sqrt
+from sensor_data import MedicalSensorSystem
 
 import json
 import multiprocessing
@@ -577,8 +578,8 @@ class Node(multiprocessing.Process):
         self.hello_delay = hello_delay
 
         comm = SocketCommunication(address, port)
-        # TODO use actual cert here
         cert = "ULTRA_CERT"
+        self.sensor_data = MedicalSensorSystem()
         hello_message = HelloMessage(label=label, ip=address, port=port, cert=cert)
         self.data_address = data_address
         self.client_requests = {}
@@ -611,8 +612,10 @@ class Node(multiprocessing.Process):
         return False
 
     def sensor_handler(self, data_address):
-        if data_address == self.data_address:
-            return random.random()
+        if self.data_address in data_address:
+            data_address = data_address.replace(self.data_address, "")
+            data = self.sensor_data.generate_json_string(data_address)
+            return data
 
     def save_state(self):
         if not os.path.exists("stats"):
