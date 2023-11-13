@@ -42,17 +42,26 @@ class HelloMessage:
     Class for HELLO, its source label and the issued certificate
     """
 
-    def __init__(self, label, ip, port, cert):
+    def __init__(self, label, ip, port, cert, public_key=None, sign=None):
         self.certificate = cert
         self.label = label
         self.ip = ip
         self.port = port
+        self.public_key = public_key
+        self.sign = sign
 
-    def get_string(self, ack=False):
+    def get_string(self, ack=False, private_key=None):
         id = constants.HELLO_ID
         if ack:
             id = constants.HELLO_ACK_ID
-        return f"[{id}][{self.label}][{self.ip}][{self.port}][{self.certificate}]"
+        main_body = f"[{self.label}][{self.ip}][{self.port}][{self.certificate}]"
+        if not self.sign:
+            # generate signature and base64 encode it
+            self.sign = crypto.sign_data(private_key, main_body)
+
+        # base64 encode public key
+        public_key_str = crypto.str_public_key(self.public_key)
+        return f"[{id}]{main_body}[{public_key_str}][{self.sign}]"
 
 
 class DataMessage:
@@ -86,11 +95,12 @@ class FIB:
     """
 
     class FIB_Row:
-        def __init__(self, tcp_ip, tcp_port, certificate):
+        def __init__(self, tcp_ip, tcp_port, certificate, public_key):
             self.tcp_ip = tcp_ip
             self.tcp_port = tcp_port
             self.certificate = certificate
             self.hello_count = 1
+            self.public_key = public_key
 
         def __repr__(self) -> str:
             return f"(comm={self.tcp_ip}:{self.tcp_port} count={self.hello_count})"
@@ -112,9 +122,13 @@ class FIB:
         if hello_message.label in self.table:
             if self.table[hello_message.label].hello_count <= constants.MAX_HELLO_COUNT:
                 self.table[hello_message.label].increment_hello_count()
+                self.table[hello_message.label].public_key = hello_message.public_key
         else:
             self.table[hello_message.label] = self.FIB_Row(
-                hello_message.ip, hello_message.port, hello_message.certificate
+                hello_message.ip,
+                hello_message.port,
+                hello_message.certificate,
+                hello_message.public_key,
             )
 
     def update_counts(self):
@@ -187,6 +201,7 @@ class Network:
         self.my_pending_request = set()
 
         self.private_key, self.public_key = crypto.generate_keys(2048)
+        self.hello_message.public_key = self.public_key
 
         self.last_10_packets = deque(maxlen=10)
         self.packet_counters = {
@@ -211,11 +226,19 @@ class Network:
         self.comm.register_callback(self.interest_handler)
 
     def send_hello(self, ip, port):
-        self.comm.send(ip, port, self.hello_message.get_string())
+        hello_packet = self.hello_message.get_string(private_key=self.private_key)
+        self.comm.send(ip, port, hello_packet)
         self.packet_counters["out"]["hello"] += 1
 
     def send_hello_ack(self, ip, port):
-        self.comm.send(ip, port, self.hello_message.get_string(ack=True))
+        hello_ack_packet = self.hello_message.get_string(
+            ack=True, private_key=self.private_key
+        )
+        self.comm.send(
+            ip,
+            port,
+            hello_ack_packet,
+        )
         self.packet_counters["out"]["hello_ack"] += 1
 
     def send_hellos(self):
@@ -241,17 +264,19 @@ class Network:
 
         message_obj = InterestMessage(data_address, self.label, request_id, retry_index)
         payload = message_obj.get_string()
-        encrypted_payload = message_obj.get_encrypted_string(self.public_key)
 
         for neighbor_label in copy(self.neighbor_table.table):
+            encrypted_payload = message_obj.get_encrypted_string(
+                self.neighbor_table.table[neighbor_label].public_key
+            )
             self.comm.send(
                 self.neighbor_table.table[neighbor_label].tcp_ip,
                 self.neighbor_table.table[neighbor_label].tcp_port,
-                payload,
+                encrypted_payload,
             )
             self.packet_counters["out"]["interest_org"] += 1
             self.last_10_packets.append(
-                f"[OUT]\nPLAIN: {payload}\nENCRYPT: {encrypted_payload}"
+                f"[OUT INTEREST]\nPLAIN: {payload}\nENCRYPT: {encrypted_payload}\n"
             )
 
         return request_id
@@ -263,84 +288,147 @@ class Network:
         Go through FIB table and forward interests to all neighbors except ignore_neighbor which
         forwarded the interest to us.
         """
-        payload = InterestMessage(
-            data_address, self.label, request_id, retry_index
-        ).get_string()
+        message_obj = InterestMessage(data_address, self.label, request_id, retry_index)
+        payload = message_obj.get_string()
+
         for neighbor_label in copy(self.neighbor_table.table):
             if neighbor_label != ignore_neighbor:
+                encrypted_payload = message_obj.get_encrypted_string(
+                    self.neighbor_table.table[neighbor_label].public_key
+                )
                 self.comm.send(
                     self.neighbor_table.table[neighbor_label].tcp_ip,
                     self.neighbor_table.table[neighbor_label].tcp_port,
-                    payload,
+                    encrypted_payload,
                 )
                 self.packet_counters["out"]["interest_fwd"] += 1
-                self.last_10_packets.append("OUT: " + payload)
+                self.last_10_packets.append(
+                    f"[FWD INTEREST]\nPLAIN: {payload}\nENCRYPT: {encrypted_payload}\n"
+                )
 
     def send_data(self, neighbor_label, data_address, request_id, retry_index, data):
         message_obj = DataMessage(
             self.label, data_address, request_id, retry_index, data
         )
         payload = message_obj.get_string()
-        encrypted_payload = message_obj.get_encrypted_string(self.public_key)
+        encrypted_payload = message_obj.get_encrypted_string(
+            self.neighbor_table.table[neighbor_label].public_key
+        )
 
         self.comm.send(
             self.neighbor_table.table[neighbor_label].tcp_ip,
             self.neighbor_table.table[neighbor_label].tcp_port,
-            payload,
+            encrypted_payload,
         )
         self.packet_counters["out"]["data_org"] += 1
         self.last_10_packets.append(
-            f"[OUT]\nPLAIN: {payload}\nENCRYPT: {encrypted_payload}"
+            f"[OUT DATA]\nPLAIN: {payload}\nENCRYPT: {encrypted_payload}\n"
         )
 
     def forward_data(self, data_address, request_id, retry_index, data):
         if (data_address, request_id, retry_index) in self.pit:
             neighbor_label = self.pit[(data_address, request_id, retry_index)]
-            payload = DataMessage(
+            message_obj = DataMessage(
                 self.label, data_address, request_id, retry_index, data
-            ).get_string()
+            )
+            payload = message_obj.get_string()
+            encrypted_payload = message_obj.get_encrypted_string(
+                self.neighbor_table.table[neighbor_label].public_key
+            )
 
             self.comm.send(
                 self.neighbor_table.table[neighbor_label].tcp_ip,
                 self.neighbor_table.table[neighbor_label].tcp_port,
-                payload,
+                encrypted_payload,
             )
             self.pit.pop((data_address, request_id, retry_index))
             self.packet_counters["out"]["data_fwd"] += 1
-            self.last_10_packets.append("OUT: " + payload)
+            self.last_10_packets.append(
+                f"[FWD DATA]\nPLAIN: {payload}\nENCRYPT: {encrypted_payload}\n"
+            )
 
     def _decode_data(self, data):
+        # print("HELLO DATA:", data)
         data_array = re.findall(r"\[([^\]]+)\]", data)
+
+        # Decode Hello packets
         if data_array[0] == "0" or data_array[0] == "4":
+            data_type = int(data_array[0])
             label = int(data_array[1])
             ip_address = data_array[2]
             port = int(data_array[3])
             cert = data_array[4]
-            # TODO: Validate cert here
-            data_type = int(data_array[0])
-            return data_type, HelloMessage(
-                label=label, ip=ip_address, port=port, cert=cert
-            )
-        elif data_array[0] == "1":
-            # decrypt payload
-            # 1. Get label 2. Get public key for label from FIB 3. Decrypt 4. If successful, break again and continue normally.
+            public_key = data_array[5]
+            sign = data_array[6]
 
-            label = int(data_array[1])
-            data_address = data_array[2]
-            request_id = data_array[3]
-            retry_index = int(data_array[4])
-            data_payload = data_array[5]
-            data_type = int(data_array[0])
-            return 1, DataMessage(
-                label, data_address, request_id, retry_index, data_payload
+            # Validate signature
+            public_key_decoded = crypto.get_public_key_from_string(public_key)
+            verify = crypto.verify_signature(
+                public_key_decoded,
+                f"[{label}][{ip_address}][{port}][{cert}]",
+                sign,
             )
+            if not verify:
+                return -1, "DATA GETS IGNORED, SINCE TYPE -1 DOESN'T EXIST"
+
+            # TODO: Validate cert here
+
+            return data_type, HelloMessage(
+                label=label,
+                ip=ip_address,
+                port=port,
+                cert=cert,
+                public_key=public_key_decoded,
+                sign=sign,
+            )
+
+        # Decode Data packets
+        elif data_array[0] == "1":
+            data_type = int(data_array[0])
+            label = int(data_array[1])
+            encrypted_payload = data_array[2]
+            # decrypt payload
+            if label in self.neighbor_table.table:
+                decrypted_payload = crypto.decrypt_data(
+                    self.private_key, encrypted_payload
+                )
+
+                if not decrypted_payload:
+                    return -1, "DATA GETS IGNORED, SINCE TYPE -1 DOESN'T EXIST"
+
+                decrypted_payload = re.findall(r"\[([^\]]+)\]", decrypted_payload)
+                data_address = decrypted_payload[0]
+                request_id = decrypted_payload[1]
+                retry_index = int(decrypted_payload[2])
+                data_payload = decrypted_payload[3]
+                return 1, DataMessage(
+                    label, data_address, request_id, retry_index, data_payload
+                )
+            else:
+                return -1, "DATA GETS IGNORED, SINCE TYPE -1 DOESN'T EXIST"
+
+        # Decode Interest packets
         elif data_array[0] == "2":
             label = int(data_array[1])
-            data_address = data_array[2]
-            request_id = data_array[3]
-            retry_index = int(data_array[4])
             data_type = int(data_array[0])
-            return 2, InterestMessage(data_address, label, request_id, retry_index)
+            encrypted_payload = data_array[2]
+            # decrypt payload
+            if label in self.neighbor_table.table:
+                decrypted_payload = crypto.decrypt_data(
+                    self.private_key, encrypted_payload
+                )
+
+                if not decrypted_payload:
+                    return -1, "DATA GETS IGNORED, SINCE TYPE -1 DOESN'T EXIST"
+
+                decrypted_payload = re.findall(r"\[([^\]]+)\]", decrypted_payload)
+                data_address = decrypted_payload[0]
+                request_id = decrypted_payload[1]
+                retry_index = int(decrypted_payload[2])
+
+                return 2, InterestMessage(data_address, label, request_id, retry_index)
+            else:
+                return -1, "DATA GETS IGNORED, SINCE TYPE -1 DOESN'T EXIST"
         else:
             return -1, "DATA GETS IGNORED, SINCE TYPE -1 DOESN'T EXIST"
 
@@ -370,7 +458,9 @@ class Network:
 
         if data_type == 2:
             self.packet_counters["in"]["interest"] += 1
-            self.last_10_packets.append("IN: " + message.get_string())
+            self.last_10_packets.append(
+                f"[IN INTEREST]\nDECRYPT:{message.get_string()}\n"
+            )
             # Check if I own the data
             sensor_data = self.sensor_data_callback(message.data_address)
 
@@ -414,7 +504,7 @@ class Network:
 
         if data_type == 1:
             self.packet_counters["in"]["data"] += 1
-            self.last_10_packets.append("IN: " + message.get_string())
+            self.last_10_packets.append(f"[IN DATA]\nDECRYPT:{message.get_string()}\n")
 
             if not self.originator_callback(
                 message.data_address, message.request_id, message.data
@@ -576,9 +666,9 @@ class Node(multiprocessing.Process):
                     for packet in self.ndn.last_10_packets:
                         print(packet)
                 elif task["call"] == "print_public_key":
-                    crypto.print_public_key(self.ndn.public_key)
+                    print(crypto.str_public_key(self.ndn.public_key))
                 elif task["call"] == "print_private_key":
-                    crypto.print_private_key(self.ndn.private_key)
+                    print(crypto.str_private_key(self.ndn.private_key))
 
             self.save_state()
 
