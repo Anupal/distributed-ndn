@@ -42,15 +42,18 @@ class HelloMessage:
     Class for HELLO, its source label and the issued certificate
     """
 
-    def __init__(self, label, ip, port, cert, public_key=None, sign=None):
+    def __init__(
+        self, label, ip, port, cert, public_key=None, sign=None, member_sign=None
+    ):
         self.certificate = cert
         self.label = label
         self.ip = ip
         self.port = port
         self.public_key = public_key
         self.sign = sign
+        self.member_sign = member_sign
 
-    def get_string(self, ack=False, private_key=None):
+    def get_string(self, ack=False, private_key=None, member_private_key=None):
         id = constants.HELLO_ID
         if ack:
             id = constants.HELLO_ACK_ID
@@ -59,9 +62,13 @@ class HelloMessage:
             # generate signature and base64 encode it
             self.sign = crypto.sign_data(private_key, main_body)
 
+        if not self.member_sign:
+            # generate signature and base64 encode it
+            self.member_sign = crypto.sign_data(member_private_key, main_body)
+
         # base64 encode public key
         public_key_str = crypto.str_public_key(self.public_key)
-        return f"[{id}]{main_body}[{public_key_str}][{self.sign}]"
+        return f"[{id}]{main_body}[{public_key_str}][{self.sign}][{self.member_sign}]"
 
 
 class DataMessage:
@@ -187,7 +194,9 @@ class Network:
         }
         # print(f"NEAREST {k} NODES: {self.k_nearest}")
 
-    def __init__(self, label, all_nodes, k, comm, hello_delay, hello_message) -> None:
+    def __init__(
+        self, label, all_nodes, k, comm, hello_delay, hello_message, member_key_path
+    ) -> None:
         self.comm: SocketCommunication = comm
         self.label = label
         self.sensor_data_callback = None
@@ -200,6 +209,8 @@ class Network:
         self.pit = {}
         self.my_pending_request = set()
 
+        self.member_private_key = crypto.load_private_key_from_disk(member_key_path)
+        self.member_public_key = self.member_private_key.public_key()
         self.private_key, self.public_key = crypto.generate_keys(2048)
         self.hello_message.public_key = self.public_key
 
@@ -226,13 +237,17 @@ class Network:
         self.comm.register_callback(self.interest_handler)
 
     def send_hello(self, ip, port):
-        hello_packet = self.hello_message.get_string(private_key=self.private_key)
+        hello_packet = self.hello_message.get_string(
+            private_key=self.private_key, member_private_key=self.member_private_key
+        )
         self.comm.send(ip, port, hello_packet)
         self.packet_counters["out"]["hello"] += 1
 
     def send_hello_ack(self, ip, port):
         hello_ack_packet = self.hello_message.get_string(
-            ack=True, private_key=self.private_key
+            ack=True,
+            private_key=self.private_key,
+            member_private_key=self.member_private_key,
         )
         self.comm.send(
             ip,
@@ -349,9 +364,7 @@ class Network:
                 self.pit.pop((data_address, request_id, retry_index))
 
     def _decode_data(self, data):
-        # print("HELLO DATA:", data)
         data_array = re.findall(r"\[([^\]]+)\]", data)
-
         # Decode Hello packets
         if data_array[0] == "0" or data_array[0] == "4":
             data_type = int(data_array[0])
@@ -361,8 +374,9 @@ class Network:
             cert = data_array[4]
             public_key = data_array[5]
             sign = data_array[6]
+            member_sign = data_array[7]
 
-            # Validate signature
+            # Validate peer signature
             public_key_decoded = crypto.get_public_key_from_string(public_key)
             verify = crypto.verify_signature(
                 public_key_decoded,
@@ -372,7 +386,12 @@ class Network:
             if not verify:
                 return -1, "DATA GETS IGNORED, SINCE TYPE -1 DOESN'T EXIST"
 
-            # TODO: Validate cert here
+            # Validate member signature
+            verify = crypto.verify_signature(
+                self.member_public_key,
+                f"[{label}][{ip_address}][{port}][{cert}]",
+                member_sign,
+            )
 
             return data_type, HelloMessage(
                 label=label,
@@ -538,7 +557,18 @@ class Node(multiprocessing.Process):
     """
 
     def __init__(
-        self, x, y, label, data_address, address, port, all_nodes, k, hello_delay, mgmt
+        self,
+        x,
+        y,
+        label,
+        data_address,
+        address,
+        port,
+        all_nodes,
+        k,
+        hello_delay,
+        mgmt,
+        member_key_path,
     ):
         super().__init__()
         self.x = x
@@ -552,7 +582,9 @@ class Node(multiprocessing.Process):
         hello_message = HelloMessage(label=label, ip=address, port=port, cert=cert)
         self.data_address = data_address
         self.client_requests = {}
-        self.ndn = Network(label, all_nodes, k, comm, hello_delay, hello_message)
+        self.ndn = Network(
+            label, all_nodes, k, comm, hello_delay, hello_message, member_key_path
+        )
         self.ndn.sensor_data_callback = self.sensor_handler
         self.ndn.originator_callback = self.originator_handler
         self.mgmt = mgmt
@@ -716,7 +748,7 @@ class SocketCommunication:
         Decodes received data and passes it to all registered callbacks.
 
         """
-        data = peer_connection.recv(1024).decode("utf-8")
+        data = peer_connection.recv(2048).decode("utf-8")
         # print(f"Received message '{data}' from {peer_address}")
 
         # Execute all registered callbacks

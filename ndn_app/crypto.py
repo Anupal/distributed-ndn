@@ -93,9 +93,10 @@ def get_public_key_from_string(public_key_string):
     )
 
 
-# function to load a certificate that is commonly used across the network
-def load_certificate(file_path):
-    with open(file_path, "rb") as f:
-        cert_data = f.read()
-    certificate = load_pem_x509_certificate(cert_data, default_backend())
-    return certificate
+def load_private_key_from_disk(key_path):
+    with open(key_path, "rb") as file:
+        key_data = file.read()
+        private_key = serialization.load_pem_private_key(
+            key_data, password=None, backend=default_backend()
+        )
+    return private_key

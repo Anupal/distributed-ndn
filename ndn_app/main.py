@@ -161,6 +161,7 @@ def main():
             constants.MINIMUM_NEIGHBORS,
             constants.HELLO_DELAY,
             mgmt,
+            constants.MEMBER_KEY_PATH,
         )
         nodes[i] = node
         node.start()
