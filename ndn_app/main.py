@@ -93,6 +93,30 @@ def display_last_10(nodes):
         print(f"Node {index} not found on this Pi!")
 
 
+def display_private_key(nodes):
+    index = input("Enter node index: ")
+    if "-1" == index:
+        return
+
+    index = int(index)
+    if index in nodes:
+        nodes[index].mgmt.put({"call": "print_private_key", "args": ()})
+    else:
+        print(f"Node {index} not found on this Pi!")
+
+
+def display_public_key(nodes):
+    index = input("Enter node index: ")
+    if "-1" == index:
+        return
+
+    index = int(index)
+    if index in nodes:
+        nodes[index].mgmt.put({"call": "print_public_key", "args": ()})
+    else:
+        print(f"Node {index} not found on this Pi!")
+
+
 def send_interest_packet(nodes):
     index = input("Enter node index: ")
     data_address = input("Enter data address: ")
@@ -137,6 +161,7 @@ def main():
             constants.MINIMUM_NEIGHBORS,
             constants.HELLO_DELAY,
             mgmt,
+            constants.MEMBER_KEY_PATH,
         )
         nodes[i] = node
         node.start()
@@ -145,12 +170,15 @@ def main():
 
     display_menu()
     while True:
+        sleep_duration = 2
         choice = input("> ")
 
         if choice == "0":
             display_menu()
+            sleep_duration = 0
         elif choice == "1":
             display_all_nodes(nodes)
+            sleep_duration = 0
         elif choice == "2":
             display_fib(nodes)
         elif choice == "3":
@@ -159,14 +187,23 @@ def main():
             display_counters(nodes)
         elif choice == "5":
             send_interest_packet(nodes)
+        elif choice == "7":
+            display_public_key(nodes)
+        elif choice == "8":
+            display_private_key(nodes)
         elif choice == "9":
             display_last_10(nodes)
         elif choice == "10":
             display_knn(nodes)
         elif choice == "-1":
+            for node_id in nodes:
+                nodes[node_id].terminate()
+                nodes[node_id].join()
             exit()
+        else:
+            sleep_duration = 0
 
-        time.sleep(2)
+        time.sleep(sleep_duration)
 
 
 if __name__ == "__main__":
