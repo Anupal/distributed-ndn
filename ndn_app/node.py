@@ -335,17 +335,18 @@ class Network:
             encrypted_payload = message_obj.get_encrypted_string(
                 self.neighbor_table.table[neighbor_label].public_key
             )
-
-            self.comm.send(
-                self.neighbor_table.table[neighbor_label].tcp_ip,
-                self.neighbor_table.table[neighbor_label].tcp_port,
-                encrypted_payload,
-            )
-            self.pit.pop((data_address, request_id, retry_index))
-            self.packet_counters["out"]["data_fwd"] += 1
-            self.last_10_packets.append(
-                f"[FWD DATA]\nPLAIN: {payload}\nENCRYPT: {encrypted_payload}\n"
-            )
+            if (data_address, request_id, retry_index) in self.pit:
+                self.comm.send(
+                    self.neighbor_table.table[neighbor_label].tcp_ip,
+                    self.neighbor_table.table[neighbor_label].tcp_port,
+                    encrypted_payload,
+                )
+                self.packet_counters["out"]["data_fwd"] += 1
+                self.last_10_packets.append(
+                    f"[FWD DATA]\nPLAIN: {payload}\nENCRYPT: {encrypted_payload}\n"
+                )
+            if (data_address, request_id, retry_index) in self.pit:
+                self.pit.pop((data_address, request_id, retry_index))
 
     def _decode_data(self, data):
         # print("HELLO DATA:", data)
@@ -461,6 +462,11 @@ class Network:
             self.last_10_packets.append(
                 f"[IN INTEREST]\nDECRYPT:{message.get_string()}\n"
             )
+
+            # Check if I sent the original interest
+            if self.originator_callback(message.data_address, message.request_id, None):
+                return
+
             # Check if I own the data
             sensor_data = self.sensor_data_callback(message.data_address)
 
@@ -556,12 +562,19 @@ class Node(multiprocessing.Process):
         self.client_requests[(data_address, request_id)] = False
 
     def originator_handler(self, data_address, request_id, data):
+        """
+        Used by interest and data handlers:
+
+        Interest handler: check if I sent the original request and don't forward again (leave data as None)
+        Data handler: check if I sent the original request and print the data (pass data value so it gets printed)
+        """
         # Check if I originally sent the request
         if (data_address, request_id) in self.client_requests:
             # If I have not yet received reply then print data
             if not self.client_requests[(data_address, request_id)]:
                 self.client_requests[(data_address, request_id)] = True
-                print(f"Sensor value received: {data_address} = {data}", flush=True)
+                if data:
+                    print(f"Sensor value received: {data_address} = {data}", flush=True)
             return True
         return False
 
