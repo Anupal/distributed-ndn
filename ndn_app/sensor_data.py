@@ -31,17 +31,15 @@ class MedicalSensorSystem:
                 "fractional": self.percentage_to_fractional(random.uniform(95, 100)),
             },
             "respiratoryRate": random.randint(12, 20),
-            "movement": {
-                "accelerometer": {
-                    "x": random.uniform(-1, 1),
-                    "y": random.uniform(-1, 1),
-                    "z": random.uniform(-1, 1),
-                },
-                "gyroscope": {
-                    "roll": random.uniform(-180, 180),
-                    "pitch": random.uniform(-90, 90),
-                    "yaw": random.uniform(-180, 180),
-                },
+            "accelerometer": {
+                "x": random.uniform(-1, 1),
+                "y": random.uniform(-1, 1),
+                "z": random.uniform(-1, 1),
+            },
+            "gyroscope": {
+                "roll": random.uniform(-180, 180),
+                "pitch": random.uniform(-90, 90),
+                "yaw": random.uniform(-180, 180),
             },
             "eeg": random.uniform(0, 100),
         }
