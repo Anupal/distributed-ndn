@@ -154,7 +154,7 @@ def main():
             constants.NODES[i]["xy"][0],
             constants.NODES[i]["xy"][1],
             i,
-            f"/data/{i}",
+            f"/data/{i}/",
             constants.NODES[i]["server_ip"],
             constants.NODES[i]["server_port"],
             constants.NODES,
