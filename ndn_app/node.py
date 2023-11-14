@@ -604,10 +604,9 @@ class Node(multiprocessing.Process):
         # Check if I originally sent the request
         if (data_address, request_id) in self.client_requests:
             # If I have not yet received reply then print data
-            if not self.client_requests[(data_address, request_id)]:
+            if not self.client_requests[(data_address, request_id)] and data:
                 self.client_requests[(data_address, request_id)] = True
-                if data:
-                    print(f"Sensor value received: {data_address} = {data}", flush=True)
+                print(f"Sensor value received: {data_address} = {data}", flush=True)
             return True
         return False
 
