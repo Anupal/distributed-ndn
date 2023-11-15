@@ -4,7 +4,7 @@ from copy import copy
 
 ### GW
 GW_NODE_LABEL = 9
-GW_DETAILS = ("10.35.70.43", 30010, "/wristband/")
+GW_DETAILS = ("10.35.70.10", 33005, "/wristband/")
 GW_KEY = "gateway.pem"
 
 ### NODES CORE
@@ -13,7 +13,7 @@ RPI2_IP = "10.35.70.16"
 # RPI1_IP = "127.0.0.1"
 # RPI2_IP = "127.0.0.1"
 
-COORDINATE_SEED = 1  # 5
+COORDINATE_SEED = 1  # 3
 random.seed(COORDINATE_SEED)
 GRID_DIMENSIONS = (1000, 1000)
 NUM_NODES = 10
