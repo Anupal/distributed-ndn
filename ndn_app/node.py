@@ -14,6 +14,7 @@ import constants
 import re
 import string
 import crypto
+import prettytable
 
 
 class InterestMessage:
@@ -68,7 +69,7 @@ class HelloMessage:
             self.member_sign = crypto.sign_data(member_private_key, main_body)
 
         # base64 encode public key
-        public_key_str = crypto.str_public_key(self.public_key)
+        public_key_str = crypto.b64_public_key(self.public_key)
         return f"[{id}]{main_body}[{public_key_str}][{self.sign}][{self.member_sign}]"
 
 
@@ -691,31 +692,85 @@ class Node(multiprocessing.Process):
             # Handle mgmt commands if any
             if not self.mgmt.empty():
                 task = self.mgmt.get()
-                print("MGMT task:", task, flush=True)
-                print(f"*** Node={self.label} ***")
+                # print("MGMT task:", task, flush=True)
+
                 if task["call"] == "send_interest_packet":
                     self.originate_interest(task["args"][0], task["args"][1])
+
                 elif task["call"] == "print_fib":
-                    print(f"FIB:{self.ndn.neighbor_table}")
+                    table = prettytable.PrettyTable()
+                    table.field_names = ["Label", "TCP IP", "TCP Port"]
+                    # print(f"FIB:{self.ndn.neighbor_table}")
+                    for neighbor_label in self.ndn.neighbor_table.table:
+                        table.add_row(
+                            [
+                                neighbor_label,
+                                self.ndn.neighbor_table.table[neighbor_label].tcp_ip,
+                                self.ndn.neighbor_table.table[neighbor_label].tcp_port,
+                            ]
+                        )
+                    print(table)
+
                 elif task["call"] == "print_pit":
-                    print(f"PIT:{self.ndn.pit}")
+                    table = prettytable.PrettyTable()
+                    table.field_names = ["Label", "Data address", "Request ID", "Retry"]
+                    for data_address, request_id, retry_index in self.ndn.pit:
+                        neighbor_label = self.ndn.pit[
+                            (data_address, request_id, retry_index)
+                        ]
+                        table.add_row(
+                            [neighbor_label, data_address, request_id, retry_index]
+                        )
+                    print(table)
+
                 elif task["call"] == "print_counters":
-                    print("INPUT COUNTERS:")
+                    table = prettytable.PrettyTable()
+                    table.field_names = ["Packet", "Count"]
+                    table.align["Packet"] = "l"
+                    table.align["Count"] = "l"
                     for counter in self.ndn.packet_counters["in"]:
-                        print(f"{counter}: {self.ndn.packet_counters['in'][counter]}")
-                    print("OUTPUT COUNTERS:")
+                        table.add_row(
+                            [counter.upper(), self.ndn.packet_counters["in"][counter]]
+                        )
                     for counter in self.ndn.packet_counters["out"]:
-                        print(f"{counter}: {self.ndn.packet_counters['out'][counter]}")
+                        table.add_row(
+                            [counter.upper(), self.ndn.packet_counters["out"][counter]]
+                        )
+                    print(table)
+
                 elif task["call"] == "print_knn":
-                    print("KNN:", self.ndn.k_nearest)
+                    table = prettytable.PrettyTable()
+                    table.field_names = ["Label", "TCP IP", "TCP Port"]
+
+                    for neighbor_label in self.ndn.k_nearest:
+                        table.add_row(
+                            [
+                                neighbor_label,
+                                self.ndn.k_nearest[neighbor_label][0],
+                                self.ndn.k_nearest[neighbor_label][1],
+                            ]
+                        )
+                    print(table)
+
                 elif task["call"] == "print_last_10":
                     print("LAST 10 Data & Interest packets")
                     for packet in self.ndn.last_10_packets:
                         print(packet)
+
                 elif task["call"] == "print_public_key":
                     print(crypto.str_public_key(self.ndn.public_key))
+
                 elif task["call"] == "print_private_key":
                     print(crypto.str_private_key(self.ndn.private_key))
+
+                elif task["call"] == "print_member_private_key":
+                    print(crypto.str_private_key(self.ndn.member_private_key))
+
+                elif task["call"] == "start_comms":
+                    self.ndn.comm.comms_enabled = True
+
+                elif task["call"] == "stop_comms":
+                    self.ndn.comm.comms_enabled = False
 
             self.save_state()
 
@@ -729,33 +784,38 @@ class SocketCommunication:
         self.address = address
         self.port = port
         self.callbacks = []
+        self.comms_enabled = True
 
     def register_callback(self, callback):
         self.callbacks.append(callback)
 
     def send(self, dest_address, dest_port, data):
-        client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        if self.comms_enabled:
+            client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-        # print(f"Sending message '{data}' to {(dest_address, dest_port)}")
-        try:
-            client_socket.connect((dest_address, dest_port))
-        except Exception:
-            ...
-            # print(f"Can't connect to {(dest_address, dest_port)}")
-        else:
-            client_socket.send(data.encode("utf-8"))
+            # print(f"Sending message '{data}' to {(dest_address, dest_port)}")
+            try:
+                client_socket.connect((dest_address, dest_port))
+            except Exception:
+                ...
+                # print(f"Can't connect to {(dest_address, dest_port)}")
+            else:
+                client_socket.send(data.encode("utf-8"))
 
     def _handle_incoming_packet(self, peer_connection, peer_address):
         """
         Decodes received data and passes it to all registered callbacks.
 
         """
-        data = peer_connection.recv(2048).decode("utf-8")
-        # print(f"Received message '{data}' from {peer_address}")
+        if self.comms_enabled:
+            data = peer_connection.recv(2048).decode("utf-8")
+            # print(f"Received message '{data}' from {peer_address}")
 
-        # Execute all registered callbacks
-        for callback in self.callbacks:
-            callback(data)
+            # Execute all registered callbacks
+            for callback in self.callbacks:
+                callback(data)
+        else:
+            peer_connection.close()
 
     def _listen_thread(self):
         """
