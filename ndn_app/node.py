@@ -197,7 +197,17 @@ class Network:
         # print(f"NEAREST {k} NODES: {self.k_nearest}")
 
     def __init__(
-        self, label, all_nodes, k, comm, hello_delay, hello_message, member_key_path
+        self,
+        label,
+        all_nodes,
+        k,
+        comm,
+        hello_delay,
+        hello_message,
+        member_key_path,
+        gateway,
+        gateway_key_path,
+        gateway_details,
     ) -> None:
         self.comm: SocketCommunication = comm
         self.label = label
@@ -209,9 +219,22 @@ class Network:
 
         self.neighbor_table = FIB()
         self.pit = {}
-        self.my_pending_request = set()
+
+        # gateway stuff
+        self.gpit = {}
+        self.gateway_client_requests = {}
 
         self.member_private_key = crypto.load_private_key_from_disk(member_key_path)
+        if gateway:
+            self.gateway = True
+            self.gateway_private_key = crypto.load_private_key_from_disk(
+                gateway_key_path
+            )
+            self.gateway_public_key = self.gateway_private_key.public_key()
+            self.gateway_details = gateway_details
+        else:
+            self.gateway = False
+
         self.member_public_key = self.member_private_key.public_key()
         self.private_key, self.public_key = crypto.generate_keys(2048)
         self.hello_message.public_key = self.public_key
@@ -237,6 +260,7 @@ class Network:
         self.comm.register_callback(self.hello_handler)
         self.comm.register_callback(self.data_handler)
         self.comm.register_callback(self.interest_handler)
+        self.comm.gateway_callback = self.gateway_handler
 
     def send_hello(self, ip, port):
         hello_packet = self.hello_message.get_string(
@@ -365,6 +389,30 @@ class Network:
             if (data_address, request_id, retry_index) in self.pit:
                 self.pit.pop((data_address, request_id, retry_index))
 
+    def send_over_gateway(self, data_address, data=None):
+        """
+        Build custom EG or EG_REPLY packet and send to Gateway peer.
+        """
+        print("BUILDING GW PACKET")
+
+        # EG_REPLY
+        if data:
+            print("EG_REPLY")
+            encrypted_payload = "EG_REPLY|" + crypto.encrypt_data(
+                f"{data_address}|{data}", self.gateway_public_key
+            )
+        # EG
+        else:
+            print("EG")
+            encrypted_payload = "EG|" + crypto.encrypt_data(
+                data_address, self.gateway_public_key
+            )
+
+        print("Sending...")
+        self.comm.send(
+            self.gateway_details[0], self.gateway_details[1], encrypted_payload
+        )
+
     def _decode_data(self, data):
         data_array = re.findall(r"\[([^\]]+)\]", data)
         # Decode Hello packets
@@ -491,6 +539,20 @@ class Network:
             # Check if I own the data
             sensor_data = self.sensor_data_callback(message.data_address)
 
+            # Check if am gateway and this is gateway interest
+            if (
+                self.gateway
+                and self.gateway_details[2] in message.data_address
+                and message.data_address not in self.gpit
+            ):
+                self.gpit[message.data_address] = {
+                    "request_id": message.request_id,
+                    "retry_index": message.retry_index,
+                    "neighbor_label": message.label,
+                }
+
+                self.send_over_gateway(message.data_address)
+
             if sensor_data:
                 # print(f"I own the data {message.data_address} : {sensor_data}")
                 self.send_data(
@@ -543,6 +605,61 @@ class Network:
                     message.data,
                 )
 
+    def gateway_handler(self, packet):
+        """
+        Callback for EG packets. Send data to neighbor who requested.
+
+        When handling foreign data_address interest packet and you're gateway, store interest GPIT table and send to peer gateway.
+        """
+        if not self.gateway:
+            return
+
+        packet_ = packet.split("|")
+        decrypted_packet = crypto.decrypt_data(self.gateway_private_key, packet_[1])
+
+        # If decryption was successful then peer has encrypted with invalid private key
+        if not decrypted_packet:
+            return
+
+        print("RECEIVED GW PACKET")
+
+        # EG packet
+        if packet_[0] == "EG":
+            print("EG")
+            data_address = decrypted_packet
+            request_id = self.originate_interest(data_address, 0)
+            self.gateway_client_requests[(data_address, request_id)] = False
+
+        # EG_REPLY packet
+        if packet_[0] == "EG_REPLY":
+            print("EG_REPLY")
+            decrypted_packet = decrypted_packet.split("|")
+            data_address, data = decrypted_packet[0], decrypted_packet[1]
+            if data_address in self.gpit:
+                print("GPIT:", self.gpit)
+                request_id = self.gpit[data_address]["request_id"]
+                retry_index = self.gpit[data_address]["retry_index"]
+                neighbor_label = self.gpit[data_address]["neighbor_label"]
+
+                message_obj = DataMessage(
+                    self.label, data_address, request_id, retry_index, data
+                )
+                payload = message_obj.get_string()
+                encrypted_payload = message_obj.get_encrypted_string(
+                    self.neighbor_table.table[neighbor_label].public_key
+                )
+
+                self.comm.send(
+                    self.neighbor_table.table[neighbor_label].tcp_ip,
+                    self.neighbor_table.table[neighbor_label].tcp_port,
+                    encrypted_payload,
+                )
+                self.packet_counters["out"]["data_fwd"] += 1
+                self.last_10_packets.append(
+                    f"[FWD DATA]\nPLAIN: {payload}\nENCRYPT: {encrypted_payload}\n"
+                )
+                self.gpit.pop(data_address)
+
 
 def euclidean_distance(p1, p2):
     return sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2)
@@ -571,6 +688,9 @@ class Node(multiprocessing.Process):
         hello_delay,
         mgmt,
         member_key_path,
+        gateway=False,
+        gateway_key_path=None,
+        gateway_details=None,
     ):
         super().__init__()
         self.x = x
@@ -585,7 +705,16 @@ class Node(multiprocessing.Process):
         self.data_address = data_address
         self.client_requests = {}
         self.ndn = Network(
-            label, all_nodes, k, comm, hello_delay, hello_message, member_key_path
+            label,
+            all_nodes,
+            k,
+            comm,
+            hello_delay,
+            hello_message,
+            member_key_path,
+            gateway,
+            gateway_key_path,
+            gateway_details,
         )
         self.ndn.sensor_data_callback = self.sensor_handler
         self.ndn.originator_callback = self.originator_handler
@@ -593,7 +722,7 @@ class Node(multiprocessing.Process):
 
     def originate_interest(self, data_address, retry_index):
         request_id = self.ndn.originate_interest(data_address, retry_index)
-        self.client_requests[(data_address, request_id)] = False
+        self.client_requests[(data_address, request_id)] = [False, time.time()]
 
     def originator_handler(self, data_address, request_id, data):
         """
@@ -605,9 +734,25 @@ class Node(multiprocessing.Process):
         # Check if I originally sent the request
         if (data_address, request_id) in self.client_requests:
             # If I have not yet received reply then print data
-            if not self.client_requests[(data_address, request_id)] and data:
-                self.client_requests[(data_address, request_id)] = True
-                print(f"Sensor value received: {data_address} = {data}", flush=True)
+            if not self.client_requests[(data_address, request_id)][0] and data:
+                self.client_requests[(data_address, request_id)][0] = True
+                round_trip = round(
+                    (time.time() - self.client_requests[(data_address, request_id)][1])
+                    * 1000
+                )
+                print(
+                    f"[Sensor value received in {round_trip}ms] {data_address} = {data}",
+                    flush=True,
+                )
+            return True
+        # Check if the originator was a gateway forward
+        elif (data_address, request_id) in self.ndn.gateway_client_requests:
+            if (
+                not self.ndn.gateway_client_requests[(data_address, request_id)]
+                and data
+            ):
+                self.ndn.gateway_client_requests[(data_address, request_id)] = True
+                self.ndn.send_over_gateway(data_address, data)
             return True
         return False
 
@@ -784,6 +929,7 @@ class SocketCommunication:
         self.address = address
         self.port = port
         self.callbacks = []
+        self.gateway_callback = None
         self.comms_enabled = True
 
     def register_callback(self, callback):
@@ -811,9 +957,14 @@ class SocketCommunication:
             data = peer_connection.recv(2048).decode("utf-8")
             # print(f"Received message '{data}' from {peer_address}")
 
-            # Execute all registered callbacks
-            for callback in self.callbacks:
-                callback(data)
+            # If gateway packet, execute gateway callback
+            if data[:2] == "EG":
+                print("COMM EG")
+                self.gateway_callback(data)
+            # Else, execute all other registered callbacks
+            else:
+                for callback in self.callbacks:
+                    callback(data)
         else:
             peer_connection.close()
 

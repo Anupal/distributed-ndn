@@ -31,7 +31,7 @@ def display_menu():
 
 
 def pause_node(nodes):
-    index = input("Enter node index: ")
+    index = input("    Enter node index: ")
     if "-1" == index:
         return
     index = int(index)
@@ -42,7 +42,7 @@ def pause_node(nodes):
 
 
 def unpause_node(nodes):
-    index = input("Enter node index: ")
+    index = input("    Enter node index: ")
     if "-1" == index:
         return
     index = int(index)
@@ -60,7 +60,7 @@ def display_all_nodes(nodes):
 
 
 def display_fib(nodes):
-    index = input("Enter node index: ")
+    index = input("    Enter node index: ")
     if "-1" == index:
         return
     index = int(index)
@@ -71,7 +71,7 @@ def display_fib(nodes):
 
 
 def display_pit(nodes):
-    index = input("Enter node index: ")
+    index = input("    Enter node index: ")
     if "-1" == index:
         return
 
@@ -83,7 +83,7 @@ def display_pit(nodes):
 
 
 def display_knn(nodes):
-    index = input("Enter node index: ")
+    index = input("    Enter node index: ")
     if "-1" == index:
         return
 
@@ -95,7 +95,7 @@ def display_knn(nodes):
 
 
 def display_counters(nodes):
-    index = input("Enter node index: ")
+    index = input("    Enter node index: ")
     if "-1" == index:
         return
 
@@ -107,7 +107,7 @@ def display_counters(nodes):
 
 
 def display_last_10(nodes):
-    index = input("Enter node index: ")
+    index = input("    Enter node index: ")
     if "-1" == index:
         return
 
@@ -119,7 +119,7 @@ def display_last_10(nodes):
 
 
 def display_member_private_key(nodes):
-    index = input("Enter node index: ")
+    index = input("    Enter node index: ")
     if "-1" == index:
         return
 
@@ -131,7 +131,7 @@ def display_member_private_key(nodes):
 
 
 def display_private_key(nodes):
-    index = input("Enter node index: ")
+    index = input("    Enter node index: ")
     if "-1" == index:
         return
 
@@ -143,7 +143,7 @@ def display_private_key(nodes):
 
 
 def display_public_key(nodes):
-    index = input("Enter node index: ")
+    index = input("    Enter node index: ")
     if "-1" == index:
         return
 
@@ -155,15 +155,19 @@ def display_public_key(nodes):
 
 
 def send_interest_packet(nodes):
-    index = input("Enter node index: ")
-    data_address = input("Enter data address: ")
-    retry = input("Enter retry index: ")
+    index = input("    Enter node index: ")
+
+    data_address = input("    Enter data address: ")
+    retry = input("    Enter retry index: ")
     if "-1" in (index, retry):
         return
     index, retry = int(index), int(retry)
-    nodes[index].mgmt.put(
-        {"call": "send_interest_packet", "args": (data_address, retry)}
-    )
+    if index in nodes:
+        nodes[index].mgmt.put(
+            {"call": "send_interest_packet", "args": (data_address, retry)}
+        )
+    else:
+        print(f"Node {index} not found on this Pi!")
 
 
 def main():
@@ -184,6 +188,7 @@ def main():
 
     for i in range(start, end):
         mgmt = multiprocessing.Queue(maxsize=2)
+        gw = True if i == constants.GW_NODE_LABEL else False
 
         node = Node(
             constants.NODES[i]["xy"][0],
@@ -197,6 +202,9 @@ def main():
             constants.HELLO_DELAY,
             mgmt,
             constants.MEMBER_KEY_PATH,
+            gw,
+            constants.GW_KEY,
+            constants.GW_DETAILS,
         )
         nodes[i] = node
         node.start()
