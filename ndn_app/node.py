@@ -393,22 +393,17 @@ class Network:
         """
         Build custom EG or EG_REPLY packet and send to Gateway peer.
         """
-        print("BUILDING GW PACKET")
 
-        # EG_REPLY
         if data:
-            print("EG_REPLY")
             encrypted_payload = "EG_REPLY|" + crypto.encrypt_data(
                 f"{data_address}|{data}", self.gateway_public_key
             )
         # EG
         else:
-            print("EG")
             encrypted_payload = "EG|" + crypto.encrypt_data(
                 data_address, self.gateway_public_key
             )
 
-        print("Sending...")
         self.comm.send(
             self.gateway_details[0], self.gateway_details[1], encrypted_payload
         )
@@ -621,22 +616,17 @@ class Network:
         if not decrypted_packet:
             return
 
-        print("RECEIVED GW PACKET")
-
         # EG packet
         if packet_[0] == "EG":
-            print("EG")
             data_address = decrypted_packet
             request_id = self.originate_interest(data_address, 0)
             self.gateway_client_requests[(data_address, request_id)] = False
 
         # EG_REPLY packet
         if packet_[0] == "EG_REPLY":
-            print("EG_REPLY")
             decrypted_packet = decrypted_packet.split("|")
             data_address, data = decrypted_packet[0], decrypted_packet[1]
             if data_address in self.gpit:
-                print("GPIT:", self.gpit)
                 request_id = self.gpit[data_address]["request_id"]
                 retry_index = self.gpit[data_address]["retry_index"]
                 neighbor_label = self.gpit[data_address]["neighbor_label"]
@@ -741,7 +731,7 @@ class Node(multiprocessing.Process):
                     * 1000
                 )
                 print(
-                    f"[Sensor value received in {round_trip}ms] {data_address} = {data}",
+                    f"[Sensor value received in {round_trip}ms] {data_address} = {data}\n",
                     flush=True,
                 )
             return True
@@ -776,6 +766,13 @@ class Node(multiprocessing.Process):
                             "comm": {
                                 "server_ip": self.ndn.comm.address,
                                 "server_port": self.ndn.comm.port,
+                            },
+                            "comms_enabled": self.ndn.comm.comms_enabled,
+                            "gw_node": {
+                                "is_node_marked": self.ndn.gateway,
+                                "peer_connection": self.ndn.gateway_details[:2]
+                                if self.ndn.gateway
+                                else [],
                             },
                             "packet_counters": self.ndn.packet_counters,
                             "last_10_packets": list(self.ndn.last_10_packets),
@@ -818,8 +815,8 @@ class Node(multiprocessing.Process):
         self.ndn.comm.listen()
 
         # Send initial hellos to pre-populate tables
-        self.ndn.send_hellos()
-        time.sleep(self.hello_delay + 2)
+        # self.ndn.send_hellos()
+        # time.sleep(self.hello_delay + 2)
 
         # Main loop:
         flip = 0
@@ -854,6 +851,7 @@ class Node(multiprocessing.Process):
                                 self.ndn.neighbor_table.table[neighbor_label].tcp_port,
                             ]
                         )
+                    print("\nFIB")
                     print(table)
 
                 elif task["call"] == "print_pit":
@@ -866,6 +864,7 @@ class Node(multiprocessing.Process):
                         table.add_row(
                             [neighbor_label, data_address, request_id, retry_index]
                         )
+                    print("\nPIT")
                     print(table)
 
                 elif task["call"] == "print_counters":
@@ -877,10 +876,17 @@ class Node(multiprocessing.Process):
                         table.add_row(
                             [counter.upper(), self.ndn.packet_counters["in"][counter]]
                         )
+                    print("\nINPUT")
+                    print(table)
+                    table = prettytable.PrettyTable()
+                    table.field_names = ["Packet", "Count"]
+                    table.align["Packet"] = "l"
+                    table.align["Count"] = "l"
                     for counter in self.ndn.packet_counters["out"]:
                         table.add_row(
                             [counter.upper(), self.ndn.packet_counters["out"][counter]]
                         )
+                    print("\nOUTPUT")
                     print(table)
 
                 elif task["call"] == "print_knn":
@@ -895,27 +901,35 @@ class Node(multiprocessing.Process):
                                 self.ndn.k_nearest[neighbor_label][1],
                             ]
                         )
+                    print("\nKNN")
                     print(table)
 
                 elif task["call"] == "print_last_10":
-                    print("LAST 10 Data & Interest packets")
+                    print("\nLAST 10 Data & Interest packets")
                     for packet in self.ndn.last_10_packets:
                         print(packet)
 
                 elif task["call"] == "print_public_key":
+                    print("\nNODE PUBLIC KEY")
                     print(crypto.str_public_key(self.ndn.public_key))
 
                 elif task["call"] == "print_private_key":
+                    print("\nNODE PRIVATE KEY")
                     print(crypto.str_private_key(self.ndn.private_key))
 
                 elif task["call"] == "print_member_private_key":
+                    print("\nMEMBERSHIP KEY")
                     print(crypto.str_private_key(self.ndn.member_private_key))
 
                 elif task["call"] == "start_comms":
+                    print(f"\nEnabling Comms for node {self.label}")
                     self.ndn.comm.comms_enabled = True
 
                 elif task["call"] == "stop_comms":
+                    print(f"\nDisabling Comms for node {self.label}")
                     self.ndn.comm.comms_enabled = False
+
+                print()
 
             self.save_state()
 
@@ -959,7 +973,6 @@ class SocketCommunication:
 
             # If gateway packet, execute gateway callback
             if data[:2] == "EG":
-                print("COMM EG")
                 self.gateway_callback(data)
             # Else, execute all other registered callbacks
             else:
