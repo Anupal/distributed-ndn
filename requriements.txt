@@ -3,3 +3,4 @@ matplotlib
 pyqt6
 faker
 prettytable
+cryptography==3.1.1
