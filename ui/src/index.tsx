@@ -13,10 +13,6 @@ import axios from "axios";
 const rootElement = document.getElementById('root');
 const root = ReactDOM.createRoot(rootElement!);
 
-//Bypass for error when fetching current node state
-//From: https://github.com/axios/axios/issues/4847
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-
 const store = configureStore({
     reducer: {
         nodeStateReducer: NodeStateReducer,
@@ -30,7 +26,7 @@ export type AppDispatch = typeof store.dispatch
 
 setInterval((): void => {
     store.dispatch(fetchCurrentNodeState())
-}, 5000)
+}, 1000)
 
 root.render(
     <ThemeProvider theme={theme}>

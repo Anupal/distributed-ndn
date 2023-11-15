@@ -8,7 +8,7 @@ import {NodeDetail} from "./NodeDetail";
 
 
 const getNodeNameFromLabel = (label: number) => {
-    return `Node ${label}`
+    return `${label}`
 }
 
 /**

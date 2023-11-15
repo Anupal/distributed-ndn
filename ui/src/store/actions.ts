@@ -10,10 +10,8 @@ export const fetchCurrentNodeState: AsyncThunk<
 > = createAsyncThunk<{ [label: string]: NodeState }, void, { state: RootState }>(
     "nodeState/fetchCurrentNodeState",
     async (arg, thunkAPI) => {
-        const res = await axios.get('https://macneill.scss.tcd.ie/~mathisn/scproj3/stats_2.json', {
+        const res = await axios.get('http://localhost:555/node-state', {
             responseType: "json",
-            withXSRFToken: true,
-            withCredentials: true
         })
 
         return res.data
