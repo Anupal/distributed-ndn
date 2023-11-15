@@ -8,9 +8,14 @@ import {configureStore} from "@reduxjs/toolkit";
 import {Provider} from "react-redux";
 import {NodeStateReducer} from "./store/reducers";
 import {fetchCurrentNodeState} from "./store/actions";
+import axios from "axios";
 
 const rootElement = document.getElementById('root');
 const root = ReactDOM.createRoot(rootElement!);
+
+//Bypass for error when fetching current node state
+//From: https://github.com/axios/axios/issues/4847
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 const store = configureStore({
     reducer: {
@@ -25,7 +30,7 @@ export type AppDispatch = typeof store.dispatch
 
 setInterval((): void => {
     store.dispatch(fetchCurrentNodeState())
-}, 1000)
+}, 5000)
 
 root.render(
     <ThemeProvider theme={theme}>
