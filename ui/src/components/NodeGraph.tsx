@@ -1,10 +1,11 @@
-import React, {useMemo, useState} from "react";
-import {useAppSelector} from "../store/hooks";
+import React, {useEffect, useMemo, useState} from "react";
+import {useAppDispatch, useAppSelector} from "../store/hooks";
 import {EChart} from "@kbox-labs/react-echarts";
-import {Grid, Paper} from "@mui/material";
+import {Button, Grid, Paper} from "@mui/material";
 import Typography from "@mui/material/Typography";
 import {NodeState} from "../types";
 import {NodeDetail} from "./NodeDetail";
+import {fetchCurrentNodeState} from "../store/actions";
 
 
 const getNodeNameFromLabel = (label: number) => {
@@ -23,8 +24,17 @@ const getNodeNameFromLabel = (label: number) => {
  *          pit -> visualized in table of node details TODO
  * **/
 export const NodeGraph = () => {
-    const nodesState = useAppSelector((state) => state.nodeStateReducer)
+    const dispatch = useAppDispatch()
 
+    const [animation, setAnimation] = useState(true)
+    useEffect(() => {
+        setAnimation(false)
+    })
+
+    useEffect(() => {
+        dispatch(fetchCurrentNodeState())
+    }, [])
+    const nodesState = useAppSelector((state) => state.nodeStateReducer)
     const nodeStateKeys = useMemo(() => {
         return Object.keys(nodesState)
     }, [nodesState])
@@ -57,7 +67,7 @@ export const NodeGraph = () => {
             const ipColor = ipColorMap[eachNodeState.comm.server_ip]
             const nodeColor = eachNodeState.ndn.fib.length == 0 ? "red" : ipColor
             const opacity = eachNodeState.label == selectedNodeLabel ? 0.5 : 1
-            const borderColor = eachNodeState.gw_node.is_node_marked ? "gold" : null
+            const borderColor = eachNodeState.gw_node.is_node_marked ? "gold" : nodeColor == "red" ? nodeColor : null
             return {
                 name: getNodeNameFromLabel(eachNodeState.label),
                 title: "hi",
@@ -104,10 +114,14 @@ export const NodeGraph = () => {
             <Paper style={{height: '100%', backgroundColor: '#ffffff'}}>
                 <Typography variant="h5" gutterBottom align='center'>
                     P2P Network Graph
+                    <Button onClick={() => {
+                        dispatch(fetchCurrentNodeState())
+                    }}>Get updated Node states</Button>
                 </Typography>
                 <EChart
                     className={"network-node-graph"}
                     style={{height: '89vh'}}
+                    animation={animation}
                     tooltip={{
                         formatter: (params: any) => {
                             if (params.dataType == "node") {
