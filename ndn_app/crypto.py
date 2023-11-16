@@ -17,12 +17,19 @@ def generate_keys(key_size=2048):
     return private_key, public_key
 
 
-def str_public_key(key_object):
+def b64_public_key(key_object):
     return b64encode(
         key_object.public_bytes(
             encoding=serialization.Encoding.PEM,
             format=serialization.PublicFormat.SubjectPublicKeyInfo,
         )
+    ).decode("utf-8")
+
+
+def str_public_key(key_object):
+    return key_object.public_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PublicFormat.SubjectPublicKeyInfo,
     ).decode("utf-8")
 
 
