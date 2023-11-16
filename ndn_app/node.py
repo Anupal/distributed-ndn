@@ -921,6 +921,10 @@ class Node(multiprocessing.Process):
                     print("\nMEMBERSHIP KEY")
                     print(crypto.str_private_key(self.ndn.member_private_key))
 
+                elif task["call"] == "print_gateway_private_key":
+                    print("\GATEWAY KEY")
+                    print(crypto.str_private_key(self.ndn.gateway_private_key))
+
                 elif task["call"] == "start_comms":
                     print(f"\nEnabling Comms for node {self.label}")
                     self.ndn.comm.comms_enabled = True
@@ -928,6 +932,14 @@ class Node(multiprocessing.Process):
                 elif task["call"] == "stop_comms":
                     print(f"\nDisabling Comms for node {self.label}")
                     self.ndn.comm.comms_enabled = False
+
+                elif task["call"] == "print_state":
+                    print(f"\nNode {self.label} state = {self.ndn.comm.comms_enabled}")
+
+                elif task["call"] == "print_gateway":
+                    if self.ndn.gateway:
+                        print(f"\nGateway Node: {self.label}")
+                        print("Peer connection:", self.ndn.gateway_details[:2])
 
                 print()
 
