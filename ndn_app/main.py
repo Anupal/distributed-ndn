@@ -147,15 +147,15 @@ def loop(nodes):
                 if label != None:
                     nodes[label].mgmt.put({"call": "print_public_key", "args": ()})
 
-            elif "pause " in user_input:
-                label = parse_input_prefix("pause ", user_input, nodes)
-                if label != None:
-                    nodes[label].mgmt.put({"call": "stop_comms", "args": ()})
-
             elif "unpause " in user_input:
                 label = parse_input_prefix("unpause ", user_input, nodes)
                 if label != None:
                     nodes[label].mgmt.put({"call": "start_comms", "args": ()})
+
+            elif "pause " in user_input:
+                label = parse_input_prefix("pause ", user_input, nodes)
+                if label != None:
+                    nodes[label].mgmt.put({"call": "stop_comms", "args": ()})
 
             elif "show state " in user_input:
                 label = parse_input_prefix("show state ", user_input, nodes)
