@@ -6,7 +6,7 @@ import * as https from "https";
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT;
+const port = 5555;
 
 app.get('/node-state', async (req, res) => {
     const instance = axios.create({
