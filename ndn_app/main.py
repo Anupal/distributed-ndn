@@ -151,7 +151,7 @@ def loop(nodes):
                 label = parse_input_prefix("unpause ", user_input, nodes)
                 if label != None:
                     nodes[label].mgmt.put({"call": "start_comms", "args": ()})
-
+            
             elif "pause " in user_input:
                 label = parse_input_prefix("pause ", user_input, nodes)
                 if label != None:
