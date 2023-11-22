@@ -2,11 +2,13 @@ import express from 'express';
 import dotenv from 'dotenv';
 import axios from "axios";
 import * as https from "https";
+import {Constants} from "../constants.js";
+import * as constants from "constants";
 
 dotenv.config();
 
 const app = express();
-const port = 5555;
+const port = Constants.application_port;
 
 app.get('/node-state', async (req, res) => {
     const instance = axios.create({
@@ -15,12 +17,12 @@ app.get('/node-state', async (req, res) => {
         })
     });
 
-    const promisePi2 = (instance.get('https://macneill.scss.tcd.ie/~anmishra/scproj3/stats_1.json', {
+    const promisePi2 = (instance.get(`${constants.node_state1_url}/stats_1.json`, {
         responseType: "json",
     }))
     const resultPi2 = (await promisePi2).data
     //There were some issues doing both requests in parallel
-    const promisePi1 = (instance.get('https://macneill.scss.tcd.ie/~mathisn/scproj3/stats_2.json', {
+    const promisePi1 = (instance.get(`${constants.node_state2_url}/stats_1.json`, {
         responseType: "json",
     }))
     const resultPi1 = (await promisePi1).data
