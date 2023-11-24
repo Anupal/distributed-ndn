@@ -1,0 +1,7 @@
+{
+  "name": "constants",
+  "version": "1.0.0",
+  "description": "",
+  "main": "constants.js",
+  "type": "module"
+}
