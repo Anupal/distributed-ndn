@@ -2,8 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import axios from "axios";
 import * as https from "https";
-import {Constants} from "../constants.js";
-import * as constants from "constants";
+import {Constants} from "../ui/src/consts/constants.js";
 
 dotenv.config();
 
@@ -16,21 +15,27 @@ app.get('/node-state', async (req, res) => {
             rejectUnauthorized: false
         })
     });
+    if (Constants.use_sample_json) {
+        const promiseSample = (instance.get(`http://localhost:${Constants.application_port}/sample_stats.json`, {
+            responseType: "json",
+        }))
+        const result = (await promiseSample).data
+        res.send(result)
+    } else {
+        const promisePi2 = (instance.get(`${Constants.node_state1_url}/stats_1.json`, {
+            responseType: "json",
+        }))
+        const resultPi2 = (await promisePi2).data
+        //There were some issues doing both requests in parallel
+        const promisePi1 = (instance.get(`${Constants.node_state2_url}/stats_1.json`, {
+            responseType: "json",
+        }))
+        const resultPi1 = (await promisePi1).data
 
-    const promisePi2 = (instance.get(`${constants.node_state1_url}/stats_1.json`, {
-        responseType: "json",
-    }))
-    const resultPi2 = (await promisePi2).data
-    //There were some issues doing both requests in parallel
-    const promisePi1 = (instance.get(`${constants.node_state2_url}/stats_1.json`, {
-        responseType: "json",
-    }))
-    const resultPi1 = (await promisePi1).data
-
-    console.log("WAS PASSIERT HIER?")
-
-    res.send({...resultPi1, ...resultPi2});
-});
+        res.send({...resultPi1, ...resultPi2});
+    }
+})
+;
 
 app.use(express.static("../ui/build"))
 

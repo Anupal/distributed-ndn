@@ -1,0 +1,713 @@
+{
+  "2": {
+    "x": 782,
+    "y": 64,
+    "comm": {
+      "server_ip": "10.35.70.38",
+      "server_port": 33002
+    },
+    "comms_enabled": true,
+    "gw_node": {
+      "is_node_marked": false,
+      "peer_connection": []
+    },
+    "packet_counters": {
+      "in": {
+        "hello": 7535,
+        "hello_ack": 11303,
+        "interest": 7,
+        "data": 0
+      },
+      "out": {
+        "hello": 11319,
+        "hello_ack": 7535,
+        "interest_org": 0,
+        "interest_fwd": 4,
+        "data_org": 0,
+        "data_fwd": 0
+      }
+    },
+    "last_10_packets": [
+      "[IN INTEREST]\nDECRYPT:[2][7][/wristband/1/heartrate][GcoEW][1]\n",
+      "[FWD INTEREST]\nPLAIN: [2][2][/wristband/1/heartrate][GcoEW][1]\nENCRYPT: [2][2][k6vyh4aE+Mr0qTqAtC/moVIXUgk5a16vmUyYXGlclmqC+VixRRyNsRTwk+l9uzUO1KOOZNlVBaq1LvGxkAMVLRx9OgrxOhYaXBv8o6LShToI5gIB7Km2gJ2ov4UNQfb/aK4jNL4JYjuOffQ44LZThGHaRiDFe5Mr6BFFzPj99DjILco4s6cvVy9Q2SpwMXnvmlSMf/mBXpTOcRZ4O58kpB4RWU8eyzyVI3wOQly3+Hl+cWg2P9wuzEDkDC/InqeyDdbgL+UJxCEKPO+3yCeFg1iw068a5sZMKdmdAIbZywPpA+N+2MTc57YqATQbXv/p5BbvVqRZRIsYMXsUpmm50g==]\n",
+      "[FWD INTEREST]\nPLAIN: [2][2][/wristband/1/heartrate][GcoEW][1]\nENCRYPT: [2][2][orOajDMeGGT0zH37ndVr5IKv1v+ZY0IPPM50nCvWFNVmQbFftLu8nzmQai/Ve7xHYN/Ipd8vRZyhFx0etewTDKNMsTRfWp2Jsmqbvw3tjTGyQNiyTHCKMElq1ZcCm8ps26SCWObg4cuCb3zCeItWxM12pQ1FzABFaMMaRos1SM0FxaNZ9IZiSTIwRXlCOqymKohiVLxgMbGtn8Ksiy1aWv7FUweu5DWY11NkW0lTYw41jPDRo/qe0nJL6E3NSlWNBudh0Jx+xjI6KsoOnVyumqJmGj2XJjdYdsM1ub5V5JPTR8o78kjVNxotR3ihD0oi3JoP4pTl9K8PaRHiULSsaw==]\n",
+      "[IN INTEREST]\nDECRYPT:[2][3][/wristband/1/heartrate][GcoEW][1]\n",
+      "[IN INTEREST]\nDECRYPT:[2][3][/data/0/gyroscope][yKjBq][0]\n",
+      "[FWD INTEREST]\nPLAIN: [2][2][/data/0/gyroscope][yKjBq][0]\nENCRYPT: [2][2][qWpmKeGMnMV68nlGYKede/ORmL2GAU9pql+TeBVNorapwiEiONF777PSFTCnhnMAnyG4CVJZXCLSpL7hg+QbE9yI7tN9qd4b7st1PZoom7av6ABQ0i4GaUfMHBUPPOrjzq9YS3D+aeJqZ6swo20Yu9ZTWVKN84mF+vPlIb+Rgy1ZMWLdkE9HgRvuQtz2GulQKov8QY2AeU4l2X38hsjll6ucJS9zevgyOZAgyc7mA7Xdscq0glzRaxMt0Pm1HnPf+9pYNFwPu1WF1QwGXYUAHesTspA3ppk0Vn0lMGu/FKCGha3tOXvpDOcXwxyTKm4ywKxXX4+1d7sDdhhAhBlEIg==]\n",
+      "[FWD INTEREST]\nPLAIN: [2][2][/data/0/gyroscope][yKjBq][0]\nENCRYPT: [2][2][X8NZULfODpW1SwZajDCJz72bNwds4eq3AKw8yqNPUiZl+5abwQLoPxqYyMc3QAeTl7AjrRNVQEDRRc5aHcpwLj1sanynUmB7JKf64mrXAQ8Vy9K0kMrq1o0TcxTfrXm/v2Ar9zcQ31rkB5Vby65gfRekjMH+Eh8R+lXD7IKrSEjwZCgI33EDcAsk/c6acCzhZBSFlSPQ4enJMokx7boanVKqoSPoujItiHeJ94VgUtsudJVyeOvN1FlHJE8++Mpek0IZ49gV6tFkSEqmr/not+F4iLKo+nxIhlUR//4wqpFhUktn+b3MuSF5aR0hjWpB2yfSP1ZvBBtNh4qFiwr+RQ==]\n",
+      "[IN INTEREST]\nDECRYPT:[2][6][/data/0/gyroscope][yKjBq][0]\n",
+      "[IN INTEREST]\nDECRYPT:[2][7][/data/0/gyroscope][yKjBq][0]\n",
+      "[IN INTEREST]\nDECRYPT:[2][3][/data/0/gyroscope][yKjBq][0]\n"
+    ],
+    "data_address": "/data/2/",
+    "label": 2,
+    "ndn": {
+      "fib": [
+        {
+          "label": 6,
+          "hello_count": 4
+        },
+        {
+          "label": 7,
+          "hello_count": 4
+        },
+        {
+          "label": 3,
+          "hello_count": 6
+        }
+      ],
+      "pit": [
+        {
+          "data_address": "/wristband/1/heartrate",
+          "request_id": "GcoEW",
+          "retry_index": 1,
+          "label": 6
+        },
+        {
+          "data_address": "/data/0/gyroscope",
+          "request_id": "yKjBq",
+          "retry_index": 0,
+          "label": 3
+        }
+      ]
+    }
+  },
+  "1": {
+    "x": 867,
+    "y": 821,
+    "comm": {
+      "server_ip": "10.35.70.38",
+      "server_port": 33001
+    },
+    "comms_enabled": true,
+    "gw_node": {
+      "is_node_marked": false,
+      "peer_connection": []
+    },
+    "packet_counters": {
+      "in": {
+        "hello": 3768,
+        "hello_ack": 11304,
+        "interest": 7,
+        "data": 1
+      },
+      "out": {
+        "hello": 11331,
+        "hello_ack": 3768,
+        "interest_org": 0,
+        "interest_fwd": 4,
+        "data_org": 0,
+        "data_fwd": 1
+      }
+    },
+    "last_10_packets": [
+      "[IN INTEREST]\nDECRYPT:[2][6][/wristband/1/heartrate][GcoEW][1]\n",
+      "[IN INTEREST]\nDECRYPT:[2][4][/wristband/1/heartrate][GcoEW][1]\n",
+      "[IN INTEREST]\nDECRYPT:[2][4][/data/0/gyroscope][yKjBq][0]\n",
+      "[FWD INTEREST]\nPLAIN: [2][1][/data/0/gyroscope][yKjBq][0]\nENCRYPT: [2][1][HJeSsa2mY7nZw++Nk+T83RboEmttT9QZbomLtUSsahh8h4jyQM7VKA2sntLQjYlfEiomKBRTA25KI/IdO+PXpI6TArn2BTgMVzvWo5mBY7ka7puIdXxKPwFbf1OVZBBcT/wFqFhHen31CKkncM1u2ddqZYxdla93RRUgMrYhtSMPBOm6lFH+j8goLulVDIIuvzzSF7u/JK2kl0oMUPR90KA2TYTBkdSzCJvbSzzmUqIWhn6T8uBigYx/8bigcjNTLGrqCFMDR9gcDEz4qT/Mh/pQ9NSpg8Bzt0HxbcvLsknmZy1tP9igaFQyFq5ukJI3KxXBvIgCvcROG42hpGh1hA==]\n",
+      "[FWD INTEREST]\nPLAIN: [2][1][/data/0/gyroscope][yKjBq][0]\nENCRYPT: [2][1][C3pCdillO07vvtDpa+hrmlBtkr3hASrAfhtvvTaLbq0bs4sHjSmW5VptybAkJQvH+Un3CJZEN+mNtP6fVbPCSs/a8hUmXUMbBtMJsmn7FYfT+iJ+FzeWGRrO00Xui5tfAfL5jVRbMRXcrMBovTuNFo0Ov92OQujDXA2lLWocUMLHABnTNw3K82D0C/yhsSmlLG/P2deUARjWpeRErOwp/ETGnQuUkrhAlHJhNmQyUtnqiAy30LJtVmqw7NEZxUC6QJbLbztEBJKYk7GEf6BwBOrWjPTOTHSoJfbTxYeTx/wz/Iu6ZmIalmJDtd6kUNjjqYKmmvQKhSDgPZw4bZl0MQ==]\n",
+      "[IN INTEREST]\nDECRYPT:[2][5][/data/0/gyroscope][yKjBq][0]\n",
+      "[IN INTEREST]\nDECRYPT:[2][5][/data/0/gyroscope][yKjBq][0]\n",
+      "[IN INTEREST]\nDECRYPT:[2][4][/data/0/gyroscope][yKjBq][0]\n",
+      "[IN DATA]\nDECRYPT:[1][6][/data/0/gyroscope][yKjBq][0][{\"roll\": 158.0936986002638, \"pitch\": -21.383237216121756, \"yaw\": -102.02421703297918}]\n",
+      "[FWD DATA]\nPLAIN: [1][1][/data/0/gyroscope][yKjBq][0][{\"roll\": 158.0936986002638, \"pitch\": -21.383237216121756, \"yaw\": -102.02421703297918}]\nENCRYPT: [1][1][CSCBDpqid9odCT+8muYZeiGDZA6djBLXfOcth+sD6MWYC3tSEhXYCOFpOubvr5RGyw1sJ9hqOHrzhm+ZwLbsiPO9JcQuFiupX/YALGH8pF3BbhYBF4wO423GtJ/oTvZzfRmkizg2IPedcHKX8LbXEss9Gpq+A1g+rADnkOOqYDz61BwFwDeIYPX/iFV7dTANTBsJ84SbwVgz7l5ER4PfxysIsJDbxyDi+88SoL+KDjB/xBk+PEZcWQVIcMkq4DJ4MxmsggfvPMaHYoqgzcxIEqeXHOmdy4VUecL0J6ezZadm66i2VutjNgYQUvj2dWn65swYCZsV42bFSJno8HR01Q==]\n"
+    ],
+    "data_address": "/data/1/",
+    "label": 1,
+    "ndn": {
+      "fib": [
+        {
+          "label": 5,
+          "hello_count": 4
+        },
+        {
+          "label": 6,
+          "hello_count": 4
+        },
+        {
+          "label": 4,
+          "hello_count": 6
+        }
+      ],
+      "pit": [
+        {
+          "data_address": "/wristband/1/heartrate",
+          "request_id": "GcoEW",
+          "retry_index": 1,
+          "label": 5
+        }
+      ]
+    }
+  },
+  "0": {
+    "x": 137,
+    "y": 582,
+    "comm": {
+      "server_ip": "10.35.70.38",
+      "server_port": 33000
+    },
+    "comms_enabled": true,
+    "gw_node": {
+      "is_node_marked": false,
+      "peer_connection": []
+    },
+    "packet_counters": {
+      "in": {
+        "hello": 18835,
+        "hello_ack": 11297,
+        "interest": 13,
+        "data": 1
+      },
+      "out": {
+        "hello": 11334,
+        "hello_ack": 18835,
+        "interest_org": 0,
+        "interest_fwd": 4,
+        "data_org": 9,
+        "data_fwd": 1
+      }
+    },
+    "last_10_packets": [
+      "[IN INTEREST]\nDECRYPT:[2][3][/data/0/gyroscope][yKjBq][0]\n",
+      "[OUT DATA]\nPLAIN: [1][0][/data/0/gyroscope][yKjBq][0][{\"roll\": 158.0936986002638, \"pitch\": -21.383237216121756, \"yaw\": -102.02421703297918}]\nENCRYPT: [1][0][vejuqKJuX60Do0PZ0/lJckb+WeyIfTcGkq1wKyvfMP5p0eWM/Imznz4iHMA5gz4pGaFiGh3wLgVi1CeY8+VfJ0gP1nsloj0zHrH6gK3q7nIERbAJQATK4aT0hdiI9hVmbBaMUJSHlR1oBuAEFJll3sSgQkFD9NDO19EveSabnGPQ4iHOFqe/d+6jxKf8iAod3vRechQoVeLugeGlJ0Eb2P4kDtQwdKGFiuzsZYF+WfMVg2hOmAjKPz08WeaziA+Lvlhof51UhKFbaI/pJIAkE38HPifvdFLkVcxeTKC30doBec/sPP18cOsequRO3t1lgLn8SCjYIaX/mcou2NuD9g==]\n",
+      "[IN INTEREST]\nDECRYPT:[2][5][/data/0/gyroscope][yKjBq][0]\n",
+      "[OUT DATA]\nPLAIN: [1][0][/data/0/gyroscope][yKjBq][0][{\"roll\": 158.0936986002638, \"pitch\": -21.383237216121756, \"yaw\": -102.02421703297918}]\nENCRYPT: [1][0][ES/NutNrUNo8dyqNolODlbjzNuViaJNtkicXo1O7Q/v1x1YMhZN7RH0RVVS5y/CJU5hejmd27bGxClxzE0jlLACKDxp9vmg8SaJYpn7m50CBRvt4MNiZ9KsWB+/BB1bc6SpDbPnyR1YUGo8aG51j0N5hSmTbN+rsQwsdIl2Q5EOrK5wBnqtjH0HxUB1uu7ewxM3ZkfAf13oIf3z9rGTaXk4g1n3janTWS0+Gl3IL+QNbj13ibhJ2LSKVTNt63KekO0MwIiZVYFpsN47RGnu3/8On/dc16fD3cJzFA8avAx/s4MU81HBzM7MQJpSo+PkLM+KuoeqfrElKzx8KXsMO2Q==]\n",
+      "[IN INTEREST]\nDECRYPT:[2][8][/data/0/gyroscope][yKjBq][0]\n",
+      "[IN INTEREST]\nDECRYPT:[2][4][/data/0/gyroscope][yKjBq][0]\n",
+      "[OUT DATA]\nPLAIN: [1][0][/data/0/gyroscope][yKjBq][0][{\"roll\": 158.0936986002638, \"pitch\": -21.383237216121756, \"yaw\": -102.02421703297918}]\nENCRYPT: [1][0][sNuYpsWu1dUFNpHIAN+EimwEvQXisCY41jTkWgCd8MlLFiWPeBgccQy0lCHxZ1h+EdzBI1uh6FanB8HbzqrqUpAoy1nbVPVJStl+yzpKHs++LYd5GXfabUb6hzChRpOPa6cVE3KHHQdx25SU5MAVoZTha0Ji59ASYpj38jcCcxs95WAw7WtqGphCVrz98sNZcyihrvRqAvI9UrXuJDnzDSQu7SkWXJQfkTIC0Sbjq3WzuWjr171wa2f4Y4T62aFOsN/YF8qqh8wctZwlzPtKo4xpFhCPqLSy8pATLbI1dtcvd+T93/L4Hp5NpG5rQbzfjWNa0+jxNxJz1ZGJ6/qaJg==]\n",
+      "[OUT DATA]\nPLAIN: [1][0][/data/0/gyroscope][yKjBq][0][{\"roll\": 158.0936986002638, \"pitch\": -21.383237216121756, \"yaw\": -102.02421703297918}]\nENCRYPT: [1][0][pelSpzOO6yRlKRGPfNwM/XvCKdN4XRHejpW2c94kHGPBZbYWoJnD/51atCFbNC20mSA/WHnVJlnOrCTosTqjYWDTrDhRJ8RDB8wPjmw2RZUeiODMkEab+7711YPoN9zxKMMhrcDY+5H2OvaaO8fF2QdZexNDXV4Mbsd1rzf3vv452phhCtR5EVdlvddAMoAitM/Vic2CmvmEF8/9G1xd7by739RSzHvPV4u0gSNuRx08fBhIKcwQ32cruRi7O0Cu883PRz8FiK3/v9DRWJ/XLnpyW1kvB12z04iQeGXoUs6OGqV3vTcQGt6lMflC2TijsyEmxRcdzJg7wM+Jif6ceg==]\n",
+      "[IN INTEREST]\nDECRYPT:[2][3][/data/0/gyroscope][yKjBq][0]\n",
+      "[OUT DATA]\nPLAIN: [1][0][/data/0/gyroscope][yKjBq][0][{\"roll\": 158.0936986002638, \"pitch\": -21.383237216121756, \"yaw\": -102.02421703297918}]\nENCRYPT: [1][0][hRKqQP/3XavWQkLlOek7yvFn35lfEGFRD6QSxMOALcXGbXUqPmtP+6jfVsNrVwNKTtKDx4yB1FIBJsgfMZ/CUDblE+wXAEKsSTulkAPbSwvWYDhjWD0Ar9cTe6rDJtuBksQxYU7yQt35vjoxkWn15yYPxItTdCiE/yiYU+D7XFeLzAxJg3c0kC83hyadsZLt3aFj2EMBsfWWas+hCcIWDPSlbn8XYM9IsYhqS8eh0QJtrFaKu+sTGfWhQawA6raIhBGmxRrYXfETrB+XfQLcrIq5ClTTqNVfsxVLClYX8TUqbs9Qg5h7fxx0/PSfHCpm+968/3jED8ypjTuqDiH5eA==]\n"
+    ],
+    "data_address": "/data/0/",
+    "label": 0,
+    "ndn": {
+      "fib": [
+        {
+          "label": 5,
+          "hello_count": 4
+        },
+        {
+          "label": 8,
+          "hello_count": 4
+        },
+        {
+          "label": 3,
+          "hello_count": 5
+        },
+        {
+          "label": 9,
+          "hello_count": 4
+        },
+        {
+          "label": 4,
+          "hello_count": 5
+        }
+      ],
+      "pit": []
+    }
+  },
+  "4": {
+    "x": 507,
+    "y": 779,
+    "comm": {
+      "server_ip": "10.35.70.38",
+      "server_port": 33004
+    },
+    "comms_enabled": true,
+    "gw_node": {
+      "is_node_marked": false,
+      "peer_connection": []
+    },
+    "packet_counters": {
+      "in": {
+        "hello": 11292,
+        "hello_ack": 11298,
+        "interest": 6,
+        "data": 4
+      },
+      "out": {
+        "hello": 11301,
+        "hello_ack": 11292,
+        "interest_org": 0,
+        "interest_fwd": 9,
+        "data_org": 0,
+        "data_fwd": 2
+      }
+    },
+    "last_10_packets": [
+      "[IN DATA]\nDECRYPT:[1][0][/data/0/gyroscope][yKjBq][0][{\"roll\": 158.0936986002638, \"pitch\": -21.383237216121756, \"yaw\": -102.02421703297918}]\n",
+      "[FWD DATA]\nPLAIN: [1][4][/data/0/gyroscope][yKjBq][0][{\"roll\": 158.0936986002638, \"pitch\": -21.383237216121756, \"yaw\": -102.02421703297918}]\nENCRYPT: [1][4][p2KuvASu5rUJUg7EBQ5zJN2h9T0c/qoQ7r2BewoTkqVhaMz1WQ1qPNGkgYNnvy5AmmocQLyWAxvyr61R+ODsleG2anPalsXD2lc2fnUoFFGS0HYimBA6P1ZYU6TQoWXgTV0GLoONjOnb9lknHM8VTmaWz2kypVJHlbqr+vDyAfflzgcxuu8u5xfMIFRLMAsP1fXDlix8u2kvQpd0hM+oQl/a3YtSvuwnDtWLnda40sXWBEaHWD6T/LOG6kA/vqg+7kYlVpSyU8CuhB8eSggVYQQd0zamRUGQGtrsauqy0mmxEbnMu2MFj4Ei5XTUqZ2QIribbDuHvDxg8rAhrP/TyQ==]\n",
+      "[IN DATA]\nDECRYPT:[1][5][/data/0/gyroscope][yKjBq][0][{\"roll\": 158.0936986002638, \"pitch\": -21.383237216121756, \"yaw\": -102.02421703297918}]\n",
+      "[IN INTEREST]\nDECRYPT:[2][5][/data/0/gyroscope][yKjBq][0]\n",
+      "[FWD INTEREST]\nPLAIN: [2][4][/data/0/gyroscope][yKjBq][0]\nENCRYPT: [2][4][MX+WyMfU7aoCZXrF8NMFUfDECeGWwmw8CEdEDxMALQDKnSWADA6E3zARARaJ8JhnTeTWDGGjnEWuw6NGkme36AutUZ18+3j5XXerRusWkZELbLQ6onK2ZzDk1OG+UxQm5wic5yjCiHjWqmWRUfqAiPGpLX11DZN8zd8Vplt9YU5poR+6fYvolmDldxLdoDl3G7r1rdqoraq5izqGqH6hrlVBSZ5f8FdLcOjjgXhUAJybxYFHOVNb9EVgFLAhA0Eg2BsrCfxCJIbNVILJMmjA9lzfWap2eWtoxx0ForTXKfufv6iBMAS4umYDwBzghj5PD+mt9v4aRYBgpoWBe+niEA==]\n",
+      "[FWD INTEREST]\nPLAIN: [2][4][/data/0/gyroscope][yKjBq][0]\nENCRYPT: [2][4][1TVB8F8swcuFtTPeyunsEEVehm+DEqNUpXcL3lknOji8svK17E95Mv3cZCOLhWVsbVZa8b9265Sjhzphq+cR4ELiOY9bmm+hmDpuBXC5R/CF5CaboAxpRV+2ZR5115ZTqwa4u0p319StQFlgQqq2xRfA5RvW1QPtWlHGLEqRdYo0WrBy5kpKlCG4b5gAEYwQorXadVKxD27PCtZJlqGX44TQyghk1+78v6RFkOsoFOfwVRiak2h79LG0cKXQ0p3JWrWjZTpLJ39VfnNPlBeVM4JXY2kvxuLhbhc0cRYoZ/4/xqjHJwMOzoRu/O9215eE7U6NuE8CjKbLsBPz1EJqDQ==]\n",
+      "[FWD INTEREST]\nPLAIN: [2][4][/data/0/gyroscope][yKjBq][0]\nENCRYPT: [2][4][zBeEpLEa8f7g46ZuY4vhN9ycUjzFT0olK9w7e277iSs9KanicYFeqWWcxult6wO1227c0xVGVOY5JZr7RC8xJeAG8grGgskMOLLrSyTZ+y+99zjipSXMR5pt2yNk7I0jVnCUfMhH0R3n+Yoxnjv8QsBXU2FrzcU6Ks3Bxjnp6taqfbvQ0H9hI27OaqXDQlLGYaeRqg4abkSGZWg9CbpagMj8G+xuy4PCfx3kURRtWrj1QwRPgGRoZwFZl6lEszkQc9h0WR0iYKbj+q/drRK1rt5e+Hm8ySyc6/DQfSZ/AvpFS9FKLlGqmvdwW8RKxK3mxDepS3kumg2ZEYpFs/7Kbw==]\n",
+      "[IN DATA]\nDECRYPT:[1][0][/data/0/gyroscope][yKjBq][0][{\"roll\": 158.0936986002638, \"pitch\": -21.383237216121756, \"yaw\": -102.02421703297918}]\n",
+      "[FWD DATA]\nPLAIN: [1][4][/data/0/gyroscope][yKjBq][0][{\"roll\": 158.0936986002638, \"pitch\": -21.383237216121756, \"yaw\": -102.02421703297918}]\nENCRYPT: [1][4][AS9ejABFnKnS81QHo91xjuUdhmCHsJ1MBaS3BXbmh5/zX/BiVialUFHaPfi/AyYewS2DDfiStmXyRygrurCdjB7aoVyNp44cb3PMMzBZci7t8J2iC4fAhldComt+3HRfxsSrSuoTChb1kYIVkzRsNi+ihuA5CFgxv3wbjI52IE1GRmkbq2reJFCSkXDb0a7iyQUbmNA2agvjDgiyrUy97b2g7UBCR6y01+CqrbGLKmmll+idjVjEpjzr5TD1xNuhnfa3xx4gX7JidyvNmxzM3oQzrcwQAD+iVbo1Fns3r5eurivtMxYAeUPbttfZoJG3SVPWI3V97zdG6uDGfi8WRA==]\n",
+      "[IN DATA]\nDECRYPT:[1][1][/data/0/gyroscope][yKjBq][0][{\"roll\": 158.0936986002638, \"pitch\": -21.383237216121756, \"yaw\": -102.02421703297918}]\n"
+    ],
+    "data_address": "/data/4/",
+    "label": 4,
+    "ndn": {
+      "fib": [
+        {
+          "label": 5,
+          "hello_count": 4
+        },
+        {
+          "label": 1,
+          "hello_count": 6
+        },
+        {
+          "label": 0,
+          "hello_count": 6
+        },
+        {
+          "label": 9,
+          "hello_count": 4
+        }
+      ],
+      "pit": [
+        {
+          "data_address": "/wristband/1/heartrate",
+          "request_id": "GcoEW",
+          "retry_index": 1,
+          "label": 5
+        }
+      ]
+    }
+  },
+  "3": {
+    "x": 261,
+    "y": 120,
+    "comm": {
+      "server_ip": "10.35.70.38",
+      "server_port": 33003
+    },
+    "comms_enabled": true,
+    "gw_node": {
+      "is_node_marked": false,
+      "peer_connection": []
+    },
+    "packet_counters": {
+      "in": {
+        "hello": 7533,
+        "hello_ack": 11300,
+        "interest": 8,
+        "data": 2
+      },
+      "out": {
+        "hello": 11307,
+        "hello_ack": 7533,
+        "interest_org": 0,
+        "interest_fwd": 9,
+        "data_org": 0,
+        "data_fwd": 2
+      }
+    },
+    "last_10_packets": [
+      "[IN INTEREST]\nDECRYPT:[2][5][/data/0/gyroscope][yKjBq][0]\n",
+      "[IN DATA]\nDECRYPT:[1][0][/data/0/gyroscope][yKjBq][0][{\"roll\": 158.0936986002638, \"pitch\": -21.383237216121756, \"yaw\": -102.02421703297918}]\n",
+      "[FWD DATA]\nPLAIN: [1][3][/data/0/gyroscope][yKjBq][0][{\"roll\": 158.0936986002638, \"pitch\": -21.383237216121756, \"yaw\": -102.02421703297918}]\nENCRYPT: [1][3][b3e5g2XYXUgk5nB6UzB7mPKc+Jd47WE21skCi+DxLCkbPIZKXoRrR6V8sKdZVfZDD5Hw2jdXkYCVfCHCujgrKRgkBCXZQ4ID2DT6QLaGNuQsrEOLPoFRVRPumWokTcomUg4a1lQ8rt+Es3VT1kloGxeiSO7ykfnfeK6sOyHCyMo/sCLdavSOI2CI7pEkrAMngBWOV+8OfFnVRmoFPsujIFo/thEwIty0ayKw52yZmB5K7mUbqrHzs9pX375nFnSIoU57F4GfTGaCURSVje4ok7u3NH5gPBIXKOaxaXZ7LXj7GpFGwdj1taNJYS4PRMHV1R7bMvdyfwVshyCXckFWZw==]\n",
+      "[IN INTEREST]\nDECRYPT:[2][5][/data/0/gyroscope][yKjBq][0]\n",
+      "[FWD INTEREST]\nPLAIN: [2][3][/data/0/gyroscope][yKjBq][0]\nENCRYPT: [2][3][CRf6cuBdGuI6Ln97uXvZGpoEUI59VA5gwlMme1meck5hAzB5/iD/vhwoLObcUz+bTcxL2NUhsJUVp8wmBtT4JivtXmda13Fj4Zs7d8+zhTMNkuUYafIIr40BwZz2YjG1K7ucqC1dqAchoMl0FyWMDR1z+XJJqHBcPniMbgJlqYgzW7fsxJU6GQxLWmIBAmylIzzb3CoG/UQHQ6UTjGkxPq9XarAIZI4+CtEgSlw0/HdYr+86YaDNPHhpFO0nQ5eJvx6EmADIMX6jVT4vtHG4x8Va61aGNQTs0F8HyGNkReZwCZazL/qcjM3HEFjhhF+WkeXqzPI4TQ8qO6seCEatyg==]\n",
+      "[FWD INTEREST]\nPLAIN: [2][3][/data/0/gyroscope][yKjBq][0]\nENCRYPT: [2][3][bXk5vx5DfxXD4uGgra9tdkdUsfrjTMZJSY95AKQkWi7bw8ykidvLenwa+dH/alnK2q36W6iS0BRIyw8EwbN33t1gpGoJ26sLqDz92yF+ud357oMyI9zpX0mesZLjEz7QM8AqosScF33lSuCo5/5FoMhpXvlwC//+eAfVLuI7pOQeSCozV/Df4UYKYPcmFxxd0xe6Tjxo1hXX/vbBm6ZiBSRVKCnEfuFBPM3bHjHVd0Pr/rXZnkimUc7n101KnVloMYJLb/plVFQlJ2ez4uQxUbVk2Lpyflt7G1jlOznL/vrfhwMFLvfSIRqB+gSJBV17ISwdU6EqoEalWOdIy1ZIyg==]\n",
+      "[FWD INTEREST]\nPLAIN: [2][3][/data/0/gyroscope][yKjBq][0]\nENCRYPT: [2][3][ZAsZpcgFKqK7vApRCCa01x7a1TGdw5xuf5ZQciO/fg4FtKWS8P/px2JUX9wgdcvpol1AJo64ZVxT73Ip8ZdJvUq5wtMe/H52KA9mcWL2kh+gmS2PllU8Sd/TtjM7NUqu3e0cWz8qWeciucnmk5jHuix5ojYwGxgc+IOyQPqkDDksHTpeMiKEJgfGTQTGC7UWMOgri5asXqGLdDh3aEpUyFSelc1I8q9fjoNSA6nVAiHLhA8iHHMne49J95ymwaS0qNnGYzFDakTE9H89FlJEBXSbRXNQ+d7U8ogCuyB8Rcw8uDqwSbDWFawByxKhvrLngFbm+jwmqeCvyUffMzUVwA==]\n",
+      "[IN INTEREST]\nDECRYPT:[2][8][/data/0/gyroscope][yKjBq][0]\n",
+      "[IN DATA]\nDECRYPT:[1][0][/data/0/gyroscope][yKjBq][0][{\"roll\": 158.0936986002638, \"pitch\": -21.383237216121756, \"yaw\": -102.02421703297918}]\n",
+      "[FWD DATA]\nPLAIN: [1][3][/data/0/gyroscope][yKjBq][0][{\"roll\": 158.0936986002638, \"pitch\": -21.383237216121756, \"yaw\": -102.02421703297918}]\nENCRYPT: [1][3][u2uMlsFiHGqykrUTpeQZXLZeSXRJynfzksCDdv/+QNQXDE2S/2m+aB69HQKSIgmYSRVNEIgNdYpL7jjGNgTtkHrfeT8XRMnxR9s3gmvluBHVMPw2DtvyVikI07cSLYCixwR3dXAjUnJomzBXzf+P368scjFg5cFX/rTvlQzD+8bKkk7lItFvMAkjH8fLzyxVRJ6vZiqZjPfs09bofShvgUFDZ6YgnLnj+HNyEauNF9JXNxSEDGEA5UnZwQFlLy8/2gnSHX5DTLZhhEOLKyq0B8iYjJtVL3OUxIvvpWA7uVa+qfirWR5cpYbwfoEou8oe9U3T9ltkYUsVinE/fZpxBA==]\n"
+    ],
+    "data_address": "/data/3/",
+    "label": 3,
+    "ndn": {
+      "fib": [
+        {
+          "label": 0,
+          "hello_count": 6
+        },
+        {
+          "label": 5,
+          "hello_count": 4
+        },
+        {
+          "label": 2,
+          "hello_count": 6
+        },
+        {
+          "label": 8,
+          "hello_count": 4
+        }
+      ],
+      "pit": [
+        {
+          "data_address": "/wristband/1/heartrate",
+          "request_id": "GcoEW",
+          "retry_index": 1,
+          "label": 8
+        }
+      ]
+    }
+  },
+  "7": {
+    "x": 807,
+    "y": 214,
+    "comm": {
+      "server_ip": "10.35.70.16",
+      "server_port": 33007
+    },
+    "comms_enabled": true,
+    "gw_node": {
+      "is_node_marked": false,
+      "peer_connection": []
+    },
+    "packet_counters": {
+      "in": {
+        "hello": 7531,
+        "hello_ack": 11298,
+        "interest": 7,
+        "data": 0
+      },
+      "out": {
+        "hello": 11298,
+        "hello_ack": 7531,
+        "interest_org": 0,
+        "interest_fwd": 4,
+        "data_org": 0,
+        "data_fwd": 0
+      }
+    },
+    "last_10_packets": [
+      "[FWD INTEREST]\nPLAIN: [2][7][/wristband/1/heartrate][GcoEW][1]\nENCRYPT: [2][7][BghwrHhJ9HfVhJf107S4W1V7sRAiqFSOyHwiJafToyURGEfqY1IY591WmAmg6XiN8wF8gLsEwnT5LwxacWCFaamLSuUDE1l9NtvUDhZ1+iYDRy4U0Ysz82REIHw5FK9pI6qu9wSphTHH2iO5kk/7TebVaLepkxI1XaFL9FpfEHAVItmPRmjpzOEHHUJ9+Hov1bwsMv0J+h1L+EkxJKW/3drUyuAQBiVAi/q59Px/9giiD+2eEs0L63c/4FrDsST24F5PDMa5QEUGXP8gGEzYXZObt9Zhxz1qU0IqtpivYRxy6NF1lrrMXMIokWQhT+vfGjWaK4GGLw8wZwqwhMRQHA==]\n",
+      "[FWD INTEREST]\nPLAIN: [2][7][/wristband/1/heartrate][GcoEW][1]\nENCRYPT: [2][7][UTtIagsI4fqwqsnhkrWTxo6rWZKT6dsaYX7SE7tl5rxtZxCu+RYubtO45Diug5ozWtVXrcF2on6X4Fg2Wg6/aAnPeHaNQLF5IEQSyq9JN4WGjJGBEhHE+UQEl9qS2l5WJAgRcRbrYQDFq3VCYI4anGUGOZORHzHJWOg3RdtHIfqJukyu4Gait8DzKbdTiHnBVFyAQO//0wH6S2yIQdHiNiCdnpc0a6UFHSxJcr0GOoPKoq2tntNayxmFYjpi76pPu93piFs32qzYErerrOHQqL/Rf8rMlGBRln4PTq/sjIxHh9a4v+EZRcwe4ue6fy2PT6rNIZ35SBdqYIWlRoK2Nw==]\n",
+      "[IN INTEREST]\nDECRYPT:[2][6][/wristband/1/heartrate][GcoEW][1]\n",
+      "[IN INTEREST]\nDECRYPT:[2][2][/wristband/1/heartrate][GcoEW][1]\n",
+      "[IN INTEREST]\nDECRYPT:[2][5][/data/0/gyroscope][yKjBq][0]\n",
+      "[FWD INTEREST]\nPLAIN: [2][7][/data/0/gyroscope][yKjBq][0]\nENCRYPT: [2][7][F7OW5a7nA0ugomIuQzcMswm6NMaDyWmqfzeUOCXb/N8TBrteQWaTPLOgFWsXiAEBN72AjBvF6IJ05Bgk8+sEv8ws2KxxyGZsFlF79LBTYNtDGMCI9u8kSQdfHBeNZT70c50IUhYNqYmJ802RigWEpyYOetjR2obwNnAmgzNw/IwCfMCRppBU7CSYtLKBj3ycqa/V1gIHfAFAq+L5gCcOz/+MrTK9c2spg1pR7VNAq4GbM7tJW4M9IsILD7/zucjBLfpOMdQOCXpS/5/Vb3nVPWhLEMP5IYRTvmDJtEYUSn+BM8dFTDzpQzyeP4yJWkPCpIvwJK0XlQ463gT3ZGT+yA==]\n",
+      "[FWD INTEREST]\nPLAIN: [2][7][/data/0/gyroscope][yKjBq][0]\nENCRYPT: [2][7][HgSvrhcoK5rwAxUZciDk1RRlKe8TogIJ3Je3Kdwzk+wnlCemNuyeqsXjJfcSx39j4b/LZSHgVfvt5jASmQWT1gan01ZMgVZIw28qxZHkhfNeOmnyXTEA2AZlXePGKfmdRRkv5PBWJQUF8dWDfvvzbbUvHTNwyVdpbxpjyInQ9hrrASlA7YQzC21IPaQOzgbpjZwrqSQznnmR1i+7cXDAuX1+B3/g8EFdlLOlg3T92tJBYqk4LRxDYEEOl+mcQqSXOSFS1Qgmgg9kTTlRmukug6clhOikmyIA/J1s4gSpg2vH+hBrNcsduXjwgM/aD1eOz4AR3Kzrrlf3TxBCylEPuA==]\n",
+      "[IN INTEREST]\nDECRYPT:[2][2][/data/0/gyroscope][yKjBq][0]\n",
+      "[IN INTEREST]\nDECRYPT:[2][6][/data/0/gyroscope][yKjBq][0]\n",
+      "[IN INTEREST]\nDECRYPT:[2][5][/data/0/gyroscope][yKjBq][0]\n"
+    ],
+    "data_address": "/data/7/",
+    "label": 7,
+    "ndn": {
+      "fib": [
+        {
+          "label": 2,
+          "hello_count": 5
+        },
+        {
+          "label": 6,
+          "hello_count": 5
+        },
+        {
+          "label": 5,
+          "hello_count": 5
+        }
+      ],
+      "pit": [
+        {
+          "data_address": "/wristband/1/heartrate",
+          "request_id": "GcoEW",
+          "retry_index": 1,
+          "label": 5
+        },
+        {
+          "data_address": "/data/0/gyroscope",
+          "request_id": "yKjBq",
+          "retry_index": 0,
+          "label": 5
+        }
+      ]
+    }
+  },
+  "8": {
+    "x": 96,
+    "y": 499,
+    "comm": {
+      "server_ip": "10.35.70.16",
+      "server_port": 33008
+    },
+    "comms_enabled": true,
+    "gw_node": {
+      "is_node_marked": false,
+      "peer_connection": []
+    },
+    "packet_counters": {
+      "in": {
+        "hello": 11290,
+        "hello_ack": 11292,
+        "interest": 7,
+        "data": 3
+      },
+      "out": {
+        "hello": 11292,
+        "hello_ack": 11290,
+        "interest_org": 0,
+        "interest_fwd": 9,
+        "data_org": 0,
+        "data_fwd": 2
+      }
+    },
+    "last_10_packets": [
+      "[IN INTEREST]\nDECRYPT:[2][5][/data/0/gyroscope][yKjBq][0]\n",
+      "[FWD DATA]\nPLAIN: [1][8][/data/0/gyroscope][yKjBq][0][{\"roll\": 158.0936986002638, \"pitch\": -21.383237216121756, \"yaw\": -102.02421703297918}]\nENCRYPT: [1][8][WrSRXAQu9nJfg2QYyMvKOZiyjka4HuOL3B6IjREs2KP36EG1u9loqu7lCD6skqX7wo75bgdlQM8bbiAt7/veFTvSy2xegJv9lnpCtc/Fre7ax+3nLEgH8u6Cx3DTtW2/btrOJfOHi5WWvK+O0hvXt9QyRSBZwFRdE8teRUCx77F/nEY2bnXvt+Q5vz3NxWzqBs8dZzvUJVVSF4eHtPzY8efAeXL1ogycKaSNZKbdheQhSUxV9KwQh3LqQ8gcADcE/oQ6UXdPGd8JRR8s7u5CozYu5ximKknQO6Xktkgx/xKY7SfFcs70v9qTeYIMsdGD/YVL4cX4SyIvJvKLQUmtnw==]\n",
+      "[IN DATA]\nDECRYPT:[1][3][/data/0/gyroscope][yKjBq][0][{\"roll\": 158.0936986002638, \"pitch\": -21.383237216121756, \"yaw\": -102.02421703297918}]\n",
+      "[IN INTEREST]\nDECRYPT:[2][5][/data/0/gyroscope][yKjBq][0]\n",
+      "[FWD INTEREST]\nPLAIN: [2][8][/data/0/gyroscope][yKjBq][0]\nENCRYPT: [2][8][PpofJ7ZvZqhNkhQHsVfNEDzGEKKnOgSaWHgZNddp/agmbmAWUdWYDVJEMmgexIHiCx/EAwyGVlK1AoiUToLUZRIH4lYzc1m+/rtRoEgDLFLYARPdqvniMNPn0jOmYLf/FC1kv/YV8QoF5NjyRSyUPkrDrfdcYzpyw0TaA3MqfeTkmZSYXG8nN+YAsv/nCBSJINAISD9sHO55awvkC+Xcsm+GmsFS1kSc4x76wUbT61AfT8nZjpTzeu/wH8Fm0czUZUpG7QD/zmdh/YyUiFNUUB6LkhLMHpEwy4YS1pS5+WRD3l9s5greoXYLE6RkGK3LgxodmSyM7Zy7Yi6fZvmcIw==]\n",
+      "[FWD INTEREST]\nPLAIN: [2][8][/data/0/gyroscope][yKjBq][0]\nENCRYPT: [2][8][nZ2H0YfN+9XaxyBLGTaXIZZaqg+EpYH+jxLcGJ0vhZG2whND5WX4I4iUNBhGwQVvUeQGY7V9ZZOlab5FKN2O0os9TxTaWrO7QnObFCUK5t3uR0n3WcfyWn6STp97MYPqFtTrXe8tXy1FkH07j4wfIRxz9r2KQPzQfs8tYb5LAilE/CPPduGh8TYK4mdpiI7DeDFtrWlg0BCLxTv/KqYwXUOJWk5wLtyobo+N/4NGSJm5yXCupB4QMroS9PKKZdEQPijJG81IR910EdBvd5hZCRlRRG9spAkeva8pC7kEzgZga+nH099kZ/TdVonT8tUnX8E/nBiEygqPqZB4jOZqvg==]\n",
+      "[FWD INTEREST]\nPLAIN: [2][8][/data/0/gyroscope][yKjBq][0]\nENCRYPT: [2][8][ggKxP+dYep29qYdY/jOt0CEF7T1KqdAHlb3QVDf2RwrTuQeTsH8XihrPS12P1SudUwWxxrC3I6kdlyYS6h1cFbdb4l3kKeYLp04UNoxPQbjuiW/2wzRNAVipWBbfWGJ2eycd+4sFlplSjK1AgDCHrJps+zjKlMrnz+cnO2Xg7NmhWiRkrsHUJqxtg0bPpGtmkh/F+1zJGq23PeudFVLcc+jZLjYLi9mW4TpmuHbbQAkR9d7crtE3w/aeevtrHY7/s2rgXlSxNThPDg5jgtsXivVfhafsxjKbDoQKdHGzMQ44v9bwuf0qROGfLO0WH2kvB+BaLwiz2tcTqXYI95SLAA==]\n",
+      "[IN INTEREST]\nDECRYPT:[2][3][/data/0/gyroscope][yKjBq][0]\n",
+      "[IN DATA]\nDECRYPT:[1][0][/data/0/gyroscope][yKjBq][0][{\"roll\": 158.0936986002638, \"pitch\": -21.383237216121756, \"yaw\": -102.02421703297918}]\n",
+      "[FWD DATA]\nPLAIN: [1][8][/data/0/gyroscope][yKjBq][0][{\"roll\": 158.0936986002638, \"pitch\": -21.383237216121756, \"yaw\": -102.02421703297918}]\nENCRYPT: [1][8][dSyl+8Rb4/xiq+/CedPPWd5io4GgGjzCVq6WwX7cDM1kNGd0Bh/kuA7mxbw2HVmuq9qRSH6//WJmjpxPIQZhy07h5U5poY7JaQV1iVxsfGkAwvTrs0Tt114yWJv885/t75r8Oc4uDdL6R9wl0TMKLH4OW7q+D2ElY1g5pEWH94GovFOAWt5KhqWqv+hemwVmPaMcPsqTZmN2NPapAP1j41lfgwbZCwsWebVFfiFxtZ4winSjCB8Z4YfVgHVdRGu/b6DXWUeI/cSg/F2QEpfms21IWKme0dJeq8YpEO2V1XzsDMJoDZuzldVerH2mWkJpBMNYAT2RYnSlwkNW+1PzCQ==]\n"
+    ],
+    "data_address": "/data/8/",
+    "label": 8,
+    "ndn": {
+      "fib": [
+        {
+          "label": 5,
+          "hello_count": 5
+        },
+        {
+          "label": 3,
+          "hello_count": 5
+        },
+        {
+          "label": 0,
+          "hello_count": 5
+        },
+        {
+          "label": 9,
+          "hello_count": 5
+        }
+      ],
+      "pit": [
+        {
+          "data_address": "/wristband/1/heartrate",
+          "request_id": "GcoEW",
+          "retry_index": 1,
+          "label": 5
+        }
+      ]
+    }
+  },
+  "5": {
+    "x": 460,
+    "y": 483,
+    "comm": {
+      "server_ip": "10.35.70.16",
+      "server_port": 33005
+    },
+    "comms_enabled": true,
+    "gw_node": {
+      "is_node_marked": false,
+      "peer_connection": []
+    },
+    "packet_counters": {
+      "in": {
+        "hello": 26370,
+        "hello_ack": 11298,
+        "interest": 6,
+        "data": 6
+      },
+      "out": {
+        "hello": 11307,
+        "hello_ack": 26370,
+        "interest_org": 7,
+        "interest_fwd": 12,
+        "data_org": 0,
+        "data_fwd": 2
+      }
+    },
+    "last_10_packets": [
+      "[FWD INTEREST]\nPLAIN: [2][5][/data/0/gyroscope][yKjBq][0]\nENCRYPT: [2][5][G4T3MEkm0XCrmA+tBmVT3PUeiUrohFOog9mqTiOEpq+j4lmjQ1vyfewDX/yKHc2GkctG/XznXCRxa8+qtIiTjX9PQ7qr3/blwl+vleO0kbAiBraPvJre1p5fdRuA33i9hcvzBWWilf4mslHlgaIsIIlcHeGHbw7icX4hYjhN750riJ0zFU1tcXgydd9Vjfj+91LmvmASLglWzgpQOC9YwEKkFy2YFKDgo8PSxShkDzziOlzZJ7Z55Ck2hLPsy7WpJVyDUdOiUgZ1sdj18KVyjTyVr4NchlTgvgpSodV0Yus9g1tZLWbDaaToiyMHhRna/NRemxG6Dl1VWBGFz0cH6A==]\n",
+      "[FWD INTEREST]\nPLAIN: [2][5][/data/0/gyroscope][yKjBq][0]\nENCRYPT: [2][5][SPYtEltZO99Wcl7qKyd1m0jT9g36hP4dPfL/C0A646zIKSGSRFu/zIbj3lWQ99l/vVql/z1FU6+j8Yq/vJ4rzwXCe3SxknLy3iDo9tprRphw9KC+m97XU1NZUoy7bRn43IP2CenAzxczkVIZZDXvZz3+1urCZjHCJkJHL/4cmtyHJUB9gHXZP2aM/BETHgHNBXZGfuGGp53Z0heTKDPskeVikVwLrxGaYEFAqTM4PqtOmq5HnzVnMa9+SaKcO04q3VHTQz35hCR18Eir0gwegFi3ieOFX1IqepCyt+hH2DBiXDcXv2CiMl2K8/cV41bdVv2SlgNLp3mNMvYa6LrKsw==]\n",
+      "[FWD INTEREST]\nPLAIN: [2][5][/data/0/gyroscope][yKjBq][0]\nENCRYPT: [2][5][F6WjCnE7Ug8jrQhu6r9Y5yo6fqOeuCH8j3UFQ12/+1PqFFpIEQfjVmbmSTxLSG83sMmgU/vsWekyU+MbDlkPhlPduY/FOXkAWsv4ds6RcHrratE59XC737doUxSJ1JdbVcDfoHkf25bg2Ihef+75rPb4EY+ZKO2oLPt4VN7FbDx8p+2zEjotdnZrNXGjdaGlktuR6jstSYwQ9s7da1/BPJWVUcnT5EWigJeZt8qJtdJdFwS+xAbvFWxKZ8a03L85LKqlNcuJmW/QxGChf9Q8LQbmcbPK0kyfR05FNYK/LJ/IUmdWdvK2oc2u6YlOUdcL65lK9XyjO97aaNZk5hHaow==]\n",
+      "[FWD INTEREST]\nPLAIN: [2][5][/data/0/gyroscope][yKjBq][0]\nENCRYPT: [2][5][YCTlri9UCioDFCtfhtzBzMW74sJNjqZQg9sz0iLmdBfvdpeLv3ztCu0CF1U59i/gi6ai+A7zR/uFKlXUqbIxfdoT2W8A5TI2utFZzx1QHWlqoNtoTohbt2Xb7wNJ4fznpAKsem6CpSeyCmc5LUf7tlHZqX3Pw7BWOAcYNB9NE7cOpLQDDzKomWht8nUZ8Veyz3i6X8vvsHn6LRf0z5uI0fhm2MRes+dUCE/DFx3ei/mbeyw5i1t0GwwyfM+QIWJSO7pXDZEOJfq4hVwKUlbVN7dTQugEfTSixddvNshXwg6jStxk56+oMMcR5X1FkBKUbuzAzowIiq67lbPAhVonAQ==]\n",
+      "[FWD INTEREST]\nPLAIN: [2][5][/data/0/gyroscope][yKjBq][0]\nENCRYPT: [2][5][dyPcrslBlOXGBEPyc25Or8vOlB/RADWpQgVpufDWKlOXTF5pabOXvVOZjjPywMfTG+QKofn9gQsrkWSlVtqry4Oh2mJbSVDe0RTO0yq2iA01H0FwDYGKozuZzz99VXV/hDrRE6vF0OGqpWqN4NcGm6bt7rq6HLe3V1sr2kV9YfwOFqvkuTwLbx9+XdOKWtyTUKGkZxhrftTtHiJgXRxsmNpm0v3RD+8n18fOqPY9FeU9YWlREeyObz0uzEulKDbezkJrZJj2yucdRjAJ/LWoJo3FhbMJwqbNdhmh8sMY22381cqmJ9AGSlwcRuvx9W3pU+Y5vpbieXhlXMKCKq6VkQ==]\n",
+      "[IN DATA]\nDECRYPT:[1][0][/data/0/gyroscope][yKjBq][0][{\"roll\": 158.0936986002638, \"pitch\": -21.383237216121756, \"yaw\": -102.02421703297918}]\n",
+      "[FWD DATA]\nPLAIN: [1][5][/data/0/gyroscope][yKjBq][0][{\"roll\": 158.0936986002638, \"pitch\": -21.383237216121756, \"yaw\": -102.02421703297918}]\nENCRYPT: [1][5][WzJEUIOVXjkzfB9x5PPerHCZA9q/LRhbpSFtS2sDAd6vgIqMBW6enU1X7pe7xGQkQbgIFZVhkIMJarap9poYGJV900MvZrb6ZsCE9DEtRd5RnaWwi3a8+zjKbLMElMHBDvt3hM/gpkqKlpv1g4MTu7USqFnKlxKUc87r6zGIMjJ7Kl2h4rcIVoUeIOBdrmBrKL/b9dWgucuZgL2d4O9tVNVbbd1QCxs43bMSVL4cGuplzP111D6Fm9Wl08TWJAdBd8Hn4sro9mbU3GtZ6x4X64ZrMfgTyAUCVY76imkWLrBfXY6N0j/KxZQ+/zNaLIhN524N5C2N/qnuodHfEvyzZw==]\n",
+      "[IN DATA]\nDECRYPT:[1][8][/data/0/gyroscope][yKjBq][0][{\"roll\": 158.0936986002638, \"pitch\": -21.383237216121756, \"yaw\": -102.02421703297918}]\n",
+      "[IN DATA]\nDECRYPT:[1][4][/data/0/gyroscope][yKjBq][0][{\"roll\": 158.0936986002638, \"pitch\": -21.383237216121756, \"yaw\": -102.02421703297918}]\n",
+      "[IN DATA]\nDECRYPT:[1][3][/data/0/gyroscope][yKjBq][0][{\"roll\": 158.0936986002638, \"pitch\": -21.383237216121756, \"yaw\": -102.02421703297918}]\n"
+    ],
+    "data_address": "/data/5/",
+    "label": 5,
+    "ndn": {
+      "fib": [
+        {
+          "label": 0,
+          "hello_count": 6
+        },
+        {
+          "label": 1,
+          "hello_count": 6
+        },
+        {
+          "label": 6,
+          "hello_count": 6
+        },
+        {
+          "label": 7,
+          "hello_count": 6
+        },
+        {
+          "label": 3,
+          "hello_count": 6
+        },
+        {
+          "label": 4,
+          "hello_count": 6
+        },
+        {
+          "label": 8,
+          "hello_count": 6
+        }
+      ],
+      "pit": []
+    }
+  },
+  "6": {
+    "x": 667,
+    "y": 388,
+    "comm": {
+      "server_ip": "10.35.70.16",
+      "server_port": 33006
+    },
+    "comms_enabled": true,
+    "gw_node": {
+      "is_node_marked": false,
+      "peer_connection": []
+    },
+    "packet_counters": {
+      "in": {
+        "hello": 15067,
+        "hello_ack": 11299,
+        "interest": 7,
+        "data": 1
+      },
+      "out": {
+        "hello": 11301,
+        "hello_ack": 15067,
+        "interest_org": 0,
+        "interest_fwd": 6,
+        "data_org": 0,
+        "data_fwd": 1
+      }
+    },
+    "last_10_packets": [
+      "[IN INTEREST]\nDECRYPT:[2][1][/wristband/1/heartrate][GcoEW][1]\n",
+      "[IN INTEREST]\nDECRYPT:[2][1][/data/0/gyroscope][yKjBq][0]\n",
+      "[FWD INTEREST]\nPLAIN: [2][6][/data/0/gyroscope][yKjBq][0]\nENCRYPT: [2][6][o+7PqsfBnLTapuOGnK7v7gyDc0L4Q4iXezrytHLX/ukkO/J5dTXWz1QD33o1Z55NmBC6WrWF83Rfx7MDMXhhgYYNl1Cpu2PGrvMsoNWVqwQoGJEt0BFjUh79beUJV4fH3+t7O+Z7dR5/yucmAohUcnXxPjZpG4TwHf3dAFZF3Usnatx6isCGXkUPQwJs3jiYtEDWQ044UNnh0dkJM37iSNFeb4qU+v4N+kmzuiadjpiT7WJMqRTdsIeGf08OISXI4+CDfrCaGP90EWILEAZu3eeNnh2Z1KV8XMNK6XjEnPnEgImO6lVAy/Z9bsqvin8cH4m8JR/Q6okOMam6IKrCNg==]\n",
+      "[FWD INTEREST]\nPLAIN: [2][6][/data/0/gyroscope][yKjBq][0]\nENCRYPT: [2][6][NoHUBa2jwxuLXsJLtdqJE1XpYGkBo6nCnFOR7R86gAzJC3K8GLwBaK47F7qN/a9I1e2cVKDfZuBcimKrq3HH7/g+U5t/j5RcyyVY3Gr9YOXdIRLHx05OMStyNbcWSQTK+5fFGYKjyR3rAdR1ez39FMMET9dEoDhU6ulvW4obXCDoJuFBCt9OPPeyvsmO6OGY/Rj2RrDkH6p4lUlrfNWufIxaWAaSDHgNejPIJC9BK2A/3X81cmjtzpCB2Wv7Bw7B21auxp8U0C/A9w1C6v/cqBjlZ7crhxi9dk74Y6QeSwsCWrNMzv0DR7Tp1FCZ3t7o6nesa0ZXVQlB/GYKHQWUww==]\n",
+      "[FWD INTEREST]\nPLAIN: [2][6][/data/0/gyroscope][yKjBq][0]\nENCRYPT: [2][6][pnTQ3hIj6sIZhBPrcnUAeMJYWcYjv8Y6rwXS/ZIS0ZxurHY+QgWDQy4ZiRZRhUSiKN54txp5I8wdRtC8KXyanfAyAf6R7IwaqmxGOyvzvUx0ptIwJOxpIb/aAIolf4VyIXR46rYF49bb/iALuYAyWuSuS6cCtLWYCcML65uVCxqm809hkH9lyWmpvX5be+DnItYxAanHdQuxNPV0q9ZsBiYkH+UB3LazVR/hvFp1TwabLygJQmO4LgSUrfRZ3COPjw6DhgFCkZE79sDP2Fz8gnZ6+n2eQbkMJchhZURg17MugIibCyUdMgIcL2OxS2LY/Cn2o+yMZE1xFxRrI3J4hA==]\n",
+      "[IN INTEREST]\nDECRYPT:[2][5][/data/0/gyroscope][yKjBq][0]\n",
+      "[IN INTEREST]\nDECRYPT:[2][2][/data/0/gyroscope][yKjBq][0]\n",
+      "[IN INTEREST]\nDECRYPT:[2][7][/data/0/gyroscope][yKjBq][0]\n",
+      "[IN DATA]\nDECRYPT:[1][5][/data/0/gyroscope][yKjBq][0][{\"roll\": 158.0936986002638, \"pitch\": -21.383237216121756, \"yaw\": -102.02421703297918}]\n",
+      "[FWD DATA]\nPLAIN: [1][6][/data/0/gyroscope][yKjBq][0][{\"roll\": 158.0936986002638, \"pitch\": -21.383237216121756, \"yaw\": -102.02421703297918}]\nENCRYPT: [1][6][Dsdpp9POc6728r320jVDqBQ5ik/XhwAnya+Fr/kyrMcPNXvRyRZdSUgx9NrJwLDVAFabxRCPaT4Au7MQfhrD7Kn9fTbdY7znxAZIS6RISX3JPUGvNMsa+rVNTQ6wO5RRmSf4YxiJPcbtehxlkHQrS6G4fxl2oIvr+Iy5t9XOlKoCwwTQmVwugfFf2xOz5LT0eLwRpgPI5hqlWRJVxL2lSVWLv2YawtL84TWbhzUbKoNlumEocTfDiG3XVCcVLvjVjHdywZOU152gOGH4PqMd1NFnB5zmJUW+ovbd/UG01wBG9iPXMfMa42Cn0pt76hYRKhi8DYjA8zzQCw2DJSMn9Q==]\n"
+    ],
+    "data_address": "/data/6/",
+    "label": 6,
+    "ndn": {
+      "fib": [
+        {
+          "label": 5,
+          "hello_count": 6
+        },
+        {
+          "label": 2,
+          "hello_count": 6
+        },
+        {
+          "label": 1,
+          "hello_count": 6
+        },
+        {
+          "label": 7,
+          "hello_count": 6
+        }
+      ],
+      "pit": [
+        {
+          "data_address": "/wristband/1/heartrate",
+          "request_id": "GcoEW",
+          "retry_index": 1,
+          "label": 5
+        }
+      ]
+    }
+  },
+  "9": {
+    "x": 29,
+    "y": 914,
+    "comm": {
+      "server_ip": "10.35.70.16",
+      "server_port": 33009
+    },
+    "comms_enabled": true,
+    "gw_node": {
+      "is_node_marked": true,
+      "peer_connection": [
+        "10.35.70.10",
+        33005
+      ]
+    },
+    "packet_counters": {
+      "in": {
+        "hello": 3762,
+        "hello_ack": 11286,
+        "interest": 5,
+        "data": 3
+      },
+      "out": {
+        "hello": 11286,
+        "hello_ack": 3762,
+        "interest_org": 3,
+        "interest_fwd": 2,
+        "data_org": 0,
+        "data_fwd": 1
+      }
+    },
+    "last_10_packets": [
+      "[IN INTEREST]\nDECRYPT:[2][4][/wristband/1/heartrate][GcoEW][1]\n",
+      "[FWD DATA]\nPLAIN: [1][9][/wristband/1/heartrate][GcoEW][1][92]\nENCRYPT: [1][9][VyBmifHu8/yWSwCofoOcffynwbuIVyI8fQOMYHM+ON39hhT+e6dIjOO1Sz9rFO65EPjydCue8mTdIdjlW4gmBoLvW3HzRVbpXSeSXdqAum/Q4z8S0oYZJzFgjrQHFMt+b+5aO8Zmu0ayKZsyK9z/EVMZna+RwXWDgV6fYDgzxVR8zqEaDBWA50TjPV3Fufz29hWpx0synEyqpW1PIYyHATmaDod6enH8eJ5sYBgtSEfKGKti/mjpk7bSq1ReunVInB5wAZuL/nLdNVMMP/jc6okhuagmRZdgcWEON6LBUD8sPGred4yWkbI/afGqAMjGG38I1eFlqPt1owKfj8WxBg==]\n",
+      "[OUT INTEREST]\nPLAIN: [2][9][/data/0/gyroscope][yKjBq][0]\nENCRYPT: [2][9][aMXGFNfIHoDxAqVcMK7htg1kxIDaDtGByAH7OxCUCRwfsQxKRdO57y2fAV6IBhxFu5rvSvcSk67QtU+kspYfkewoG8lqmMUg27gQlzjVcR9UJjpCW2ORppGH9rgxkyLEA6eQB+almil2Q32iGsBX94zti5QvMg+NhxIAgGTr3CVz231NAMuuVZhpTbEG1zttXh9f36zgkocLVluAwGnc96Up6ydk8jCnAHzYplvJ1vyuYSoxltyqJ5ZteaKDwTUYhSggk9jQWr09JHh2xlxgBowf9AFI3qvwLiwjvtGDOvSVx5Tw4Wx9L5CPF70BMcMfnND8U4RGYiYx+kgoYy/3Dw==]\n",
+      "[OUT INTEREST]\nPLAIN: [2][9][/data/0/gyroscope][yKjBq][0]\nENCRYPT: [2][9][Eo2PXh9OEJRQBcktDNhvKNhUaj8QabY6yc+BuEBG9atLShEG/VNsJmKrtwBXk2ydYCus30jFL5BCD8KwZNJ9tY2NTb76OKcXL09yDbRQUc/19kG6+ovrQWf/pBQQWRIqSRC9qeqteNijV+bGqCI8QteppX6hOkjcQ9xKpyC052SeKhn28fVeob5P5ir5fQt0LqRRMDtr3iCYIOfx42ep8ZxgBvLfR23qSIcB4kBVXZ7M9YP7fdz2imuVS0layLYOg+oamqBHCsxdWkZi69NTlxpTl9ewQvvKzVmoR2YlJIoqweFPf0708wOJvt88ktz/MrBpqlWnD+oyu50/lpLu8Q==]\n",
+      "[OUT INTEREST]\nPLAIN: [2][9][/data/0/gyroscope][yKjBq][0]\nENCRYPT: [2][9][CeMXE9p3vysHSQpTf+qDPGHfowAh3Q6A3NP7n6tfF96UvVgMPxlTWnSmt/dHXbIXBorv7wiMxmN5kxs0g3P2/twe+HluQ0Kqm5GtCiWDAvJ88rhvYuz+ktfVQlmL6ENe4+ZFw/4TnOu342F+QyX7pNih14WcQNuKYSNwPJAZMk+pnGqAXAiAnUJGQeTXz2VR1pzGmHcKkNgIYePVpsDYwmEFD2z9ISZ9AEJmIsYYBimlu4HPFxXl5fQja055NiB5LrjLGRliWaLy+AuP87FUsxRQ/xM5HcyHgF/hPq3WKNaU0d4O11VE5O7pUJrS7sat9zWVjQwqzbUHvU9mOsCI6g==]\n",
+      "[IN DATA]\nDECRYPT:[1][0][/data/0/gyroscope][yKjBq][0][{\"roll\": 158.0936986002638, \"pitch\": -21.383237216121756, \"yaw\": -102.02421703297918}]\n",
+      "[IN DATA]\nDECRYPT:[1][4][/data/0/gyroscope][yKjBq][0][{\"roll\": 158.0936986002638, \"pitch\": -21.383237216121756, \"yaw\": -102.02421703297918}]\n",
+      "[IN DATA]\nDECRYPT:[1][8][/data/0/gyroscope][yKjBq][0][{\"roll\": 158.0936986002638, \"pitch\": -21.383237216121756, \"yaw\": -102.02421703297918}]\n",
+      "[IN INTEREST]\nDECRYPT:[2][8][/data/0/gyroscope][yKjBq][0]\n",
+      "[IN INTEREST]\nDECRYPT:[2][4][/data/0/gyroscope][yKjBq][0]\n"
+    ],
+    "data_address": "/data/9/",
+    "label": 9,
+    "ndn": {
+      "fib": [
+        {
+          "label": 0,
+          "hello_count": 5
+        },
+        {
+          "label": 8,
+          "hello_count": 5
+        },
+        {
+          "label": 4,
+          "hello_count": 5
+        }
+      ],
+      "pit": [
+        {
+          "data_address": "/wristband/1/heartrate",
+          "request_id": "GcoEW",
+          "retry_index": 1,
+          "label": 0
+        }
+      ]
+    }
+  }
+}

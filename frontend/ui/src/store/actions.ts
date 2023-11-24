@@ -2,7 +2,7 @@ import {NodeState} from "../types";
 import {AsyncThunk, createAsyncThunk} from "@reduxjs/toolkit";
 import {RootState} from "../index";
 import axios from "axios";
-import {Constants} from "../../../constants";
+import {Constants} from "../consts/constants";
 
 export const fetchCurrentNodeState: AsyncThunk<
     { [label: string]: NodeState },
