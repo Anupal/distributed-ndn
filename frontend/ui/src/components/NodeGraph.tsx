@@ -1,14 +1,15 @@
-import React, {useMemo, useState} from "react";
-import {useAppSelector} from "../store/hooks";
+import React, {useEffect, useMemo, useState} from "react";
+import {useAppDispatch, useAppSelector} from "../store/hooks";
 import {EChart} from "@kbox-labs/react-echarts";
-import {Grid, Paper} from "@mui/material";
+import {Button, Grid, Paper} from "@mui/material";
 import Typography from "@mui/material/Typography";
 import {NodeState} from "../types";
 import {NodeDetail} from "./NodeDetail";
+import {fetchCurrentNodeState} from "../store/actions";
 
 
 const getNodeNameFromLabel = (label: number) => {
-    return `Node ${label}`
+    return `${label}`
 }
 
 /**
@@ -23,8 +24,17 @@ const getNodeNameFromLabel = (label: number) => {
  *          pit -> visualized in table of node details TODO
  * **/
 export const NodeGraph = () => {
-    const nodesState = useAppSelector((state) => state.nodeStateReducer)
+    const dispatch = useAppDispatch()
 
+    const [animation, setAnimation] = useState(true)
+    useEffect(() => {
+        setAnimation(false)
+    })
+
+    useEffect(() => {
+        dispatch(fetchCurrentNodeState())
+    }, [])
+    const nodesState = useAppSelector((state) => state.nodeStateReducer)
     const nodeStateKeys = useMemo(() => {
         return Object.keys(nodesState)
     }, [nodesState])
@@ -56,18 +66,24 @@ export const NodeGraph = () => {
 
             const ipColor = ipColorMap[eachNodeState.comm.server_ip]
             const nodeColor = eachNodeState.ndn.fib.length == 0 ? "red" : ipColor
+            const opacity = eachNodeState.label == selectedNodeLabel ? 0.5 : 1
+            const borderColor = eachNodeState.gw_node.is_node_marked ? "gold" : nodeColor == "red" ? nodeColor : null
             return {
                 name: getNodeNameFromLabel(eachNodeState.label),
                 title: "hi",
                 label: eachNodeState.label,
+                gw_node_market: eachNodeState.gw_node,
                 x: eachNodeState.x,
                 y: eachNodeState.y,
                 itemStyle: {
                     color: nodeColor,
+                    borderWidth: 4,
+                    opacity: opacity,
+                    borderColor: borderColor
                 },
             }
         }))
-    }, [nodeStateKeys]);
+    }, [nodeStateKeys, selectedNodeLabel]);
 
     const links: { source: string, target: string }[] = useMemo(() => {
         return nodeStateKeys.flatMap((eachKey) => {
@@ -87,8 +103,6 @@ export const NodeGraph = () => {
 
     const onClickEvent = (sth: any) => {
         if (sth.dataType == "node") {
-            console.log(selectedNodeLabel);
-            console.log(sth.data.label);
             setSelectedNodeLabel(sth.data.label)
         } else {
             console.log("node connection")
@@ -100,18 +114,26 @@ export const NodeGraph = () => {
             <Paper style={{height: '100%', backgroundColor: '#ffffff'}}>
                 <Typography variant="h5" gutterBottom align='center'>
                     P2P Network Graph
+                    <Button onClick={() => {
+                        dispatch(fetchCurrentNodeState())
+                    }}>Get updated Node states</Button>
                 </Typography>
                 <EChart
                     className={"network-node-graph"}
                     style={{height: '89vh'}}
+                    animation={animation}
                     tooltip={{
                         formatter: (params: any) => {
                             if (params.dataType == "node") {
                                 const singleNodeState: NodeState = nodesState[params.data.label]
+                                let nodeMarketExtraContent = ""
+                                if (singleNodeState.gw_node.is_node_marked) {
+                                    nodeMarketExtraContent = `<br />External Node IP: ${singleNodeState.gw_node.peer_connection[0]} | External Node Port: ${singleNodeState.gw_node.peer_connection[1]}`
+                                }
                                 return `
                IP: ${singleNodeState.comm.server_ip} | Port: ${singleNodeState.comm.server_port}<br />
                 Root Data Adress: ${singleNodeState.data_address}
-                `;
+                ` + nodeMarketExtraContent;
                             } else {
                                 const sourceHelloCountForTarget = nodesState[params.data.sourceLabel].ndn.fib.filter((fibEntry) => fibEntry.label == params.data.targetLabel)[0].hello_count
                                 const targetHelloCountForSource = nodesState[params.data.targetLabel].ndn.fib.filter((fibEntry) => fibEntry.label == params.data.sourceLabel)[0].hello_count

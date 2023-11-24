@@ -41,10 +41,17 @@ export interface NDN {
     pit: PitEntry[]
 }
 
+export interface GwNode{
+    is_node_marked: boolean,
+    peer_connection: [string, number]
+}
+
 export interface NodeState {
     x: number,
     y: number,
+    comms_enabled: boolean
     comm: Comm,
+    gw_node: GwNode,
     packet_counters: PacketCounters,
     last_10_packets: string[],
     data_address: string,
