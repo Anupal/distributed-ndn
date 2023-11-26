@@ -22,12 +22,12 @@ app.get('/node-state', async (req, res) => {
         const result = (await promiseSample).data
         res.send(result)
     } else {
-        const promisePi2 = (instance.get(`${Constants.node_state1_url}/stats_1.json`, {
+        const promisePi2 = (instance.get(`${Constants.node_state2_url}/stats_2.json`, {
             responseType: "json",
         }))
         const resultPi2 = (await promisePi2).data
         //There were some issues doing both requests in parallel
-        const promisePi1 = (instance.get(`${Constants.node_state2_url}/stats_1.json`, {
+        const promisePi1 = (instance.get(`${Constants.node_state1_url}/stats_1.json`, {
             responseType: "json",
         }))
         const resultPi1 = (await promisePi1).data
