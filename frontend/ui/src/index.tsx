@@ -8,6 +8,7 @@ import {configureStore} from "@reduxjs/toolkit";
 import {Provider} from "react-redux";
 import {NodeStateReducer} from "./store/reducers";
 import {fetchCurrentNodeState} from "./store/actions";
+import axios from "axios";
 
 const rootElement = document.getElementById('root');
 const root = ReactDOM.createRoot(rootElement!);
@@ -22,10 +23,6 @@ const store = configureStore({
 export type RootState = ReturnType<typeof store.getState>
 // Inferred type: {posts: PostsState, comments: CommentsState, users: UsersState}
 export type AppDispatch = typeof store.dispatch
-
-setInterval((): void => {
-    store.dispatch(fetchCurrentNodeState())
-}, 1000)
 
 root.render(
     <ThemeProvider theme={theme}>

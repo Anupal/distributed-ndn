@@ -2,9 +2,14 @@
   "0": {
     "x": 137,
     "y": 582,
+    "comms_enabled": true,
     "comm": {
       "server_ip": "127.0.0.1",
       "server_port": 34000
+    },
+    "gw_node": {
+      "is_node_marked": false,
+      "peer_connection": null
     },
     "packet_counters": {
       "in": {
@@ -41,9 +46,14 @@
   "1": {
     "x": 868,
     "y": 821,
+    "comms_enabled": true,
     "comm": {
       "server_ip": "127.0.0.2",
       "server_port": 34001
+    },
+    "gw_node": {
+      "is_node_marked": false,
+      "peer_connection": null
     },
     "packet_counters": {
       "in": {
@@ -86,9 +96,17 @@
   "2": {
     "x": 782,
     "y": 64,
+    "comms_enabled": true,
     "comm": {
       "server_ip": "127.0.0.1",
       "server_port": 34002
+    },
+    "gw_node": {
+      "is_node_marked": true,
+      "peer_connection": [
+        "127.0.0.2",
+        32433
+      ]
     },
     "packet_counters": {
       "in": {
